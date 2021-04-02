@@ -1,6 +1,7 @@
 import { hot } from "react-hot-loader/root";
 import React from "react";
 import { Link } from "react-router-dom";
+import "./main.css";
 
 const App = (props) => {
   return (

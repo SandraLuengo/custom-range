@@ -1,0 +1,27 @@
+.range {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 350px;
+  height: 20vh;
+  padding: 4px;
+  border: 2px solid #fabada;
+  border-radius: 10px;
+
+  &--component {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 300px;
+    margin: 0 auto;
+  }
+
+  &--prices {
+    width: 350px;
+    display: flex;
+    justify-content: space-between;
+    &--input {
+      width: 40px;
+    }
+  }
+}

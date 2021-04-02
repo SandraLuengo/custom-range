@@ -1,6 +1,6 @@
 const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   devtool: "source-map",
@@ -25,11 +25,12 @@ module.exports = {
         },
       },
       {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: "style-loader",
-          use: ["css-loader"],
-        }),
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
+      },
+      {
+        test: /\.scss$/i,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
       },
       {
         test: /\.(png|jpg|gif)$/,
@@ -44,9 +45,9 @@ module.exports = {
   plugins: [
     new HtmlWebPackPlugin({
       hash: true,
-      filename: "index.html", //target html
-      template: "./src/index.html", //source html
+      filename: "index.html",
+      template: "./src/index.html",
     }),
-    new ExtractTextPlugin({ filename: "css/style.css" }),
+    new MiniCssExtractPlugin(),
   ],
 };

@@ -1,12 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Range } from "../components";
+import "./exercises.scss";
 
 const Exercise1 = () => {
   return (
-    <div>
+    <div className="exercises">
       Exercise1
-      <Range/>
+      <Range min={0} max={200} selectorWidth={10}/>
       <button>
         <Link to={"/"}>Home</Link>
       </button>

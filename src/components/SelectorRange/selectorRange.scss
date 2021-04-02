@@ -1,0 +1,28 @@
+$selector-width: 10px;
+
+.selector-range {
+  width: $selector-width;
+  height: $selector-width;
+  min-width: $selector-width;
+  min-height: $selector-width;
+  border-radius: 50%;
+  &:hover {
+   // transform: scale(1.1);
+   // transition: transform 0.2s ease-in-out;
+  }
+  &:active {
+    cursor: grabbing;
+  }
+  &--left {
+    background: red;
+    position: absolute;
+    left: calc(0% - #{$selector-width});
+    z-index: 1;
+  }
+  &--right {
+    background: blue;
+    position: absolute;
+    left: 100%;
+    z-index: 1;
+  }
+}
