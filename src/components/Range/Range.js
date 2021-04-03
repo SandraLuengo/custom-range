@@ -3,9 +3,11 @@ import { SelectorRange, BarRange } from "../../components";
 import "./range.scss";
 
 const Range = ({ minPrice, maxPrice, selectorWidth }) => {
-  // Referencias a los selectores
-  const [leftSelector, setLeftSelector] = useState(null);
-  const [rightSelector, setRightSelector] = useState(null);
+  // Selection seleccionado
+  const [selectedComponent, setSelectedComponent] = useState(null);
+
+  //Prev mouse x Position
+  const [oldXMousePosition, setOldXMousePosition] = useState(0);
 
   // Left component - ROJO
   const [xLeftComponent, setXLeftComponent] = useState(0);
@@ -23,39 +25,19 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
     max: maxPrice,
   });
 
+  //mouse State
+  const [moveAllowed, setMoveAllowed] = useState(false);
+
+
+
+
   const rangeComponent = useRef(null);
-  let clickX = null;
-  let selectedRangeElement = null;
-  let moveFlag = false;
-  let mouseX = null;
-  let oldX = 0;
   let xDirection = "";
 
-  let getLeftSelectorRef = (ref) => {
-    setLeftSelector(ref.current);
-  };
-  let getRightSelectorRef = (ref) => {
-    setRightSelector(ref.current);
-  };
-
-  useEffect(() => {
-    leftSelector?.addEventListener("mousedown", (e) =>
-      mousedown(e, leftSelector)
-    );
-    rightSelector?.addEventListener("mousedown", (e) =>
-      mousedown(e, rightSelector)
-    );
-    document.addEventListener("mousemove", (e) => mousemove(e));
-    document.addEventListener("mouseup", (e) => mouseup(e));
-
-    // setRangeXMin(rangeComponent.current.getBoundingClientRect().left);
-    // setRangeXMax(rangeComponent.current.getBoundingClientRect().right);
-  }, [leftSelector, rightSelector]);
-
   let mousedown = (e, selector) => {
-    clickX = e.clientX;
-    selectedRangeElement = selector;
-    moveFlag = true;
+    console.log("mouseDown");
+    setSelectedComponent(selector);
+    setMoveAllowed(true);
   };
 
   let mousemove = (e) => {
@@ -64,36 +46,106 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
   };
 
   let moveSelector = () => {
-    if (!moveFlag) return;
-    switch (xDirection) {
-      case "left":
-        console.log(getSelectorValue())
-        getSelector()(9);
-        return;
-      case "right":
-        return;
-      default:
-        return;
+    let percentage = 100 / (maxPrice - minPrice);
+    if (moveAllowed) {
+      switch (xDirection) {
+        case "left":
+          moveLeft(percentage);
+          return;
+        case "right":
+          moveRight(percentage);
+          return;
+        default:
+          return;
+      }
     }
   };
 
-  let getSelector = () => selectedRangeElement.id === 'selector-right' ? setXRightComponent : setXLeftComponent;
-  let getSelectorValue = () => selectedRangeElement.id === 'selector-right' ? xRightComponent : xLeftComponent;
+  let moveLeft = (percentage) => {
+    if (getXComponent() > 0 && getXComponent() % percentage < percentage - 1) {
+      canMoveLeft() && setComponentValue()({...getComponentValue(), actual:getComponentValue().actual-=1})
+    }
+    canMoveLeft() && setXComponent()(
+      getXComponent() > 0 ? getXComponent() - (percentage - 1) : 0
+    );
+  }
+
+  let moveRight = (percentage) => {
+    if ( getXComponent() < 100 &&  getXComponent() % percentage < percentage - 1 ) {
+      canMoveRight()  && setComponentValue()({...getComponentValue(), actual:getComponentValue().actual+=1})
+    }
+   
+    canMoveRight() && setXComponent()(
+      getXComponent() < 100 ? getXComponent() + (percentage - 1) : 100
+    );
+  }
+
+  let canMoveLeft = () => {
+    if( selectedComponent.id==='selector-right' ) {
+      if( rightComponentValue.actual > leftComponentValue.actual +1){
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  let canMoveRight = () => {
+    if( selectedComponent.id==='selector-left' ) {
+      if(leftComponentValue.actual < rightComponentValue.actual -1){
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
+
+  let setXComponent = () => {
+    return selectedComponent?.id === "selector-right"
+      ? setXRightComponent
+      : setXLeftComponent;
+  };
+  let getXComponent = () => {
+    return selectedComponent?.id === "selector-right"
+      ? xRightComponent
+      : xLeftComponent;
+  };
+  let setComponentValue = () =>
+    selectedComponent.id === "selector-right"
+      ? setRightComponentValue
+      : setLeftComponentValue;
+
+  let getComponentValue = () =>
+    selectedComponent.id === "selector-right"
+      ? rightComponentValue
+      : leftComponentValue;
+
   let getMouseDirection = (e) => {
-    if (e.pageX < oldX) {
+    if (e.pageX < oldXMousePosition) {
       xDirection = "left";
-    } else if (e.pageX > oldX) {
+    } else if (e.pageX > oldXMousePosition) {
       xDirection = "right";
     }
-    oldX = e.pageX;
+    setOldXMousePosition(e.pageX);
   };
 
-  let mouseup = (e) => (moveFlag = false);
+  let mouseup = (e) => {
+    console.log("mouseUp");
+    setMoveAllowed(false);
+  };
 
   let getPercentage = () => {};
 
   return (
-    <div className="range">
+    <div
+      className="range"
+      onMouseMove={(e) => mousemove(e)}
+      onMouseUp={(e) => mouseup(e)}
+    >
       <div ref={rangeComponent} className="range--component">
         <SelectorRange
           position={xLeftComponent}
@@ -101,7 +153,7 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
           minValue={leftComponentValue.min}
           maxValue={leftComponentValue.max}
           actualValue={leftComponentValue.actual}
-          selectorFunction={getLeftSelectorRef}
+          mouseDown={mousedown}
         />
         <BarRange />
         <SelectorRange
@@ -110,7 +162,7 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
           minValue={rightComponentValue.min}
           maxValue={rightComponentValue.max}
           actualValue={rightComponentValue.actual}
-          selectorFunction={getRightSelectorRef}
+          mouseDown={mousedown}
         />
       </div>
       {/* <div className="range--prices">

@@ -1,28 +1,36 @@
 $selector-width: 10px;
 
-.selector-range {
-  width: $selector-width;
-  height: $selector-width;
-  min-width: $selector-width;
-  min-height: $selector-width;
-  border-radius: 50%;
-  &:hover {
-   // transform: scale(1.1);
-   // transition: transform 0.2s ease-in-out;
+.selector {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  &--range {
+    width: $selector-width;
+    height: $selector-width;
+    min-width: $selector-width;
+    min-height: $selector-width;
+    border-radius: 50%;
+    &:hover {
+      // transform: scale(1.1);
+      // transition: transform 0.2s ease-in-out;
+    }
+    &:active {
+      cursor: grabbing;
+    }
+    &--left {
+      background: red;
+      position: absolute;
+      z-index: 1;
+    }
+    &--right {
+      background: blue;
+      position: absolute;
+      z-index: 1;
+    }
   }
-  &:active {
-    cursor: grabbing;
-  }
-  &--left {
-    background: red;
+  &--value {
+    width: 19px;
+    margin-top: 39px;
     position: absolute;
-  //  left: -10px;
-    z-index: 1;
-  }
-  &--right {
-    background: blue;
-    position: absolute;
-   // left: 300px;
-    z-index: 1;
   }
 }
