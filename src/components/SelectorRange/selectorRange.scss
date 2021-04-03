@@ -16,13 +16,13 @@ $selector-width: 10px;
   &--left {
     background: red;
     position: absolute;
-    left: calc(0% - #{$selector-width});
+  //  left: -10px;
     z-index: 1;
   }
   &--right {
     background: blue;
     position: absolute;
-    left: 100%;
+   // left: 300px;
     z-index: 1;
   }
 }

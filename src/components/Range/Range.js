@@ -2,21 +2,34 @@ import React, { useEffect, useState, useRef } from "react";
 import { SelectorRange, BarRange } from "../../components";
 import "./range.scss";
 
-const Range = ({ min, max, selectorWidth }) => {
+const Range = ({ minPrice, maxPrice, selectorWidth }) => {
+  // Referencias a los selectores
   const [leftSelector, setLeftSelector] = useState(null);
   const [rightSelector, setRightSelector] = useState(null);
-  const [rangeXMin, setRangeXMin] = useState(null);
-  const [rangeXMax, setRangeXMax] = useState(null);
+
+  // Left component - ROJO
+  const [xLeftComponent, setXLeftComponent] = useState(0);
+  const [leftComponentValue, setLeftComponentValue] = useState({
+    actual: minPrice,
+    min: minPrice,
+    max: maxPrice,
+  });
+
+  // Right component - AZUL
+  const [xRightComponent, setXRightComponent] = useState(100);
+  const [rightComponentValue, setRightComponentValue] = useState({
+    actual: maxPrice,
+    min: minPrice,
+    max: maxPrice,
+  });
+
   const rangeComponent = useRef(null);
-  let previousX = null;
+  let clickX = null;
   let selectedRangeElement = null;
-  let selectedRangeClass = "";
   let moveFlag = false;
   let mouseX = null;
-  let barWidth = 300;
-  let leftSelectorRight = null;
-  let rightSelectorLeft = null;
-  let leftSelectorLeft = null;
+  let oldX = 0;
+  let xDirection = "";
 
   let getLeftSelectorRef = (ref) => {
     setLeftSelector(ref.current);
@@ -35,81 +48,68 @@ const Range = ({ min, max, selectorWidth }) => {
     document.addEventListener("mousemove", (e) => mousemove(e));
     document.addEventListener("mouseup", (e) => mouseup(e));
 
-    setRangeXMin(rangeComponent.current.getBoundingClientRect().left);
-    setRangeXMax(rangeComponent.current.getBoundingClientRect().right);
+    // setRangeXMin(rangeComponent.current.getBoundingClientRect().left);
+    // setRangeXMax(rangeComponent.current.getBoundingClientRect().right);
   }, [leftSelector, rightSelector]);
 
   let mousedown = (e, selector) => {
-    previousX = e.clientX;
+    clickX = e.clientX;
     selectedRangeElement = selector;
-    selectedRangeClass = selectedRangeElement.className
-      .replace("selector-range", "")
-      .trim();
     moveFlag = true;
   };
 
   let mousemove = (e) => {
-    if (moveFlag) {
-      leftSelectorRight = leftSelector.getBoundingClientRect().right;
-      rightSelectorLeft = rightSelector.getBoundingClientRect().left;
-      leftSelectorLeft = leftSelector.getBoundingClientRect().left;
+    getMouseDirection(e);
+    moveSelector();
+  };
 
-      mouseX = e.clientX;
-     
-      if (selectedRangeClass === "selector-range--left") {
-
-        if (leftSelectorRight < rightSelectorLeft  && mouseX >= rangeXMin - selectorWidth  ) {        
-          selectedRangeElement.style.left = `${getPercentage()}`;  
-          console.log(leftSelectorRight, rightSelectorLeft)
-
-        } else if (leftSelectorRight <= rightSelectorLeft && mouseX < leftSelectorRight) {
-          //selectedRangeElement.style.left = `${getPercentage()}`;
-        }
-      } else if (selectedRangeClass === "selector-range--right") {
-        if (mouseX <= rangeXMax + selectorWidth && rightSelectorLeft > leftSelectorRight) {
-          selectedRangeElement.style.left = `${getPercentage()}`;
-          
-        }
-      }
-
+  let moveSelector = () => {
+    if (!moveFlag) return;
+    switch (xDirection) {
+      case "left":
+        console.log(getSelectorValue())
+        getSelector()(9);
+        return;
+      case "right":
+        return;
+      default:
+        return;
     }
   };
+
+  let getSelector = () => selectedRangeElement.id === 'selector-right' ? setXRightComponent : setXLeftComponent;
+  let getSelectorValue = () => selectedRangeElement.id === 'selector-right' ? xRightComponent : xLeftComponent;
+  let getMouseDirection = (e) => {
+    if (e.pageX < oldX) {
+      xDirection = "left";
+    } else if (e.pageX > oldX) {
+      xDirection = "right";
+    }
+    oldX = e.pageX;
+  };
+
   let mouseup = (e) => (moveFlag = false);
 
-  let getPercentage = () => {
-    let percentage = ((mouseX - rangeXMin) * 100) / (rangeXMax - rangeXMin);
-    if (percentage > 100) {
-      return 100 + "%";
-    } else if (percentage <= 0) {
-      return `calc(${0}% - ${selectorWidth}px)`;
-    } else {
-      return percentage + "%";
-    }
-  };
-
-  let getPrice = () => {
-    let percentage = ((mouseX - rangeXMin) * 100) / (rangeXMax - rangeXMin);
-    if(percentage > 100) {
-        percentage =  100;
-    } else if ( percentage < 0) {
-      percentage =  0;
-    } 
-
-    return `${Math.round((percentage * max) / 100)}€`;
-  };
+  let getPercentage = () => {};
 
   return (
     <div className="range">
       <div ref={rangeComponent} className="range--component">
         <SelectorRange
+          position={xLeftComponent}
           type={"left"}
-          value={min}
+          minValue={leftComponentValue.min}
+          maxValue={leftComponentValue.max}
+          actualValue={leftComponentValue.actual}
           selectorFunction={getLeftSelectorRef}
         />
         <BarRange />
         <SelectorRange
+          position={xRightComponent}
           type={"right"}
-          value={max}
+          minValue={rightComponentValue.min}
+          maxValue={rightComponentValue.max}
+          actualValue={rightComponentValue.actual}
           selectorFunction={getRightSelectorRef}
         />
       </div>
