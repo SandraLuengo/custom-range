@@ -5,10 +5,8 @@ import "./range.scss";
 const Range = ({ minPrice, maxPrice, selectorWidth }) => {
   // Selection seleccionado
   const [selectedComponent, setSelectedComponent] = useState(null);
-
   //Prev mouse x Position
   const [oldXMousePosition, setOldXMousePosition] = useState(0);
-
   // Left component - ROJO
   const [xLeftComponent, setXLeftComponent] = useState(0);
   const [leftComponentValue, setLeftComponentValue] = useState({
@@ -16,7 +14,6 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
     min: minPrice,
     max: maxPrice,
   });
-
   // Right component - AZUL
   const [xRightComponent, setXRightComponent] = useState(100);
   const [rightComponentValue, setRightComponentValue] = useState({
@@ -24,18 +21,13 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
     min: minPrice,
     max: maxPrice,
   });
-
   //mouse State
   const [moveAllowed, setMoveAllowed] = useState(false);
-
-
-
 
   const rangeComponent = useRef(null);
   let xDirection = "";
 
   let mousedown = (e, selector) => {
-    console.log("mouseDown");
     setSelectedComponent(selector);
     setMoveAllowed(true);
   };
@@ -62,47 +54,46 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
   };
 
   let moveLeft = (percentage) => {
-    if (getXComponent() > 0 && getXComponent() % percentage < percentage - 1) {
-      canMoveLeft() && setComponentValue()({...getComponentValue(), actual:getComponentValue().actual-=1})
+    if(canMoveLeft()) {
+      if (getXComponent() > 0 && getXComponent() % percentage < percentage - 1) {
+        setComponentValue()({...getComponentValue(), actual:getComponentValue().actual-=1})
+      } else if(getXComponent() === 0) {
+        setComponentValue()({...getComponentValue(), actual:minPrice})
+      }
+      setXComponent()(
+        getXComponent() > 0 ? getXComponent() - (percentage - 1) : 0
+      );
     }
-    canMoveLeft() && setXComponent()(
-      getXComponent() > 0 ? getXComponent() - (percentage - 1) : 0
-    );
-  }
+  };
 
   let moveRight = (percentage) => {
-    if ( getXComponent() < 100 &&  getXComponent() % percentage < percentage - 1 ) {
-      canMoveRight()  && setComponentValue()({...getComponentValue(), actual:getComponentValue().actual+=1})
-    }
-   
-    canMoveRight() && setXComponent()(
-      getXComponent() < 100 ? getXComponent() + (percentage - 1) : 100
-    );
-  }
+    if(canMoveRight()) {
+      if ( getXComponent() < 100 &&  getXComponent() % percentage < percentage - 1 ) {
+         setComponentValue()({...getComponentValue(), actual:getComponentValue().actual+=1})
+      } else if(getXComponent() === 100) {
+        setComponentValue()({...getComponentValue(), actual:maxPrice})
+      }
+      setXComponent()(
+        getXComponent() < 100 ? getXComponent() + (percentage - 1) : 100
+      );
+    } 
+  };
 
   let canMoveLeft = () => {
     if( selectedComponent.id==='selector-right' ) {
-      if( rightComponentValue.actual > leftComponentValue.actual +1){
-        return true;
-      } else {
-        return false;
-      }
+      return rightComponentValue.actual > leftComponentValue.actual +1 ? true : false
     } else {
       return true;
     }
-  }
+  };
 
   let canMoveRight = () => {
     if( selectedComponent.id==='selector-left' ) {
-      if(leftComponentValue.actual < rightComponentValue.actual -1){
-        return true;
-      } else {
-        return false;
-      }
+      return leftComponentValue.actual < rightComponentValue.actual -1 ? true : false;
     } else {
       return true;
     }
-  }
+  };
 
   let setXComponent = () => {
     return selectedComponent?.id === "selector-right"
@@ -138,7 +129,26 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
     setMoveAllowed(false);
   };
 
-  let getPercentage = () => {};
+  let changePrice = (e) => {
+    let newValue =  parseInt(e.target.value);
+    if(selectedComponent.id === "selector-left") {
+      if(newValue <= 6 ) { 
+        newValue = minPrice;
+      } else if(newValue >= rightComponentValue.actual) {
+        newValue = rightComponentValue.actual - 1; 
+      } 
+      setLeftComponentValue({...getComponentValue(), actual:newValue});
+      setXLeftComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
+    } else if( selectedComponent.id === "selector-right") {
+      if(newValue >= 100) { 
+        newValue = maxPrice;
+      } else if(newValue <= leftComponentValue.actual) {
+        newValue = leftComponentValue.actual + 1;
+      } 
+      setRightComponentValue({...getComponentValue(), actual:newValue});
+      setXRightComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
+    }
+  };
 
   return (
     <div
@@ -154,6 +164,7 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
           maxValue={leftComponentValue.max}
           actualValue={leftComponentValue.actual}
           mouseDown={mousedown}
+          changePrice={changePrice}
         />
         <BarRange />
         <SelectorRange
@@ -163,12 +174,9 @@ const Range = ({ minPrice, maxPrice, selectorWidth }) => {
           maxValue={rightComponentValue.max}
           actualValue={rightComponentValue.actual}
           mouseDown={mousedown}
+          changePrice={changePrice}
         />
       </div>
-      {/* <div className="range--prices">
-        <input className="range--prices--input" type="text" value={max} />
-        <input className="range--prices--input" type="text" value={min} />
-      </div> */}
     </div>
   );
 };

@@ -8,6 +8,7 @@ const SelectorRange = ({
   minValue,
   actualValue,
   mouseDown,
+  changePrice,
 }) => {
   const selector = useRef(null);
 
@@ -24,8 +25,10 @@ const SelectorRange = ({
         id={`selector-${type}`}
       ></div>
       <input
+        onChange={changePrice}
+        onMouseDown={(e) => mouseDown(e, selector.current)}
         className="selector--value"
-        value={actualValue}
+        value={actualValue || ''}
         style={{ left: `${position}%` }}
       />
     </div>
