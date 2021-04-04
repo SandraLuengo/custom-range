@@ -6,8 +6,8 @@ import "./exercises.scss";
 const Exercise1 = () => {
   return (
     <div className="exercises">
-      Exercise1
-      <Range minPrice={6} maxPrice={80} />
+      Exercise1 - Min price 1
+      <Range minPrice={1} maxPrice={30}  fixedType={false}  />
       <button>
         <Link to={"/"}>Home</Link>
       </button>

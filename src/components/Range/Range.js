@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { SelectorRange, BarRange } from "../../components";
 import "./range.scss";
 
-const Range = ({ minPrice, maxPrice }) => {
+const Range = ({ minPrice, maxPrice, fixedType }) => {
   // Selection seleccionado
   const [selectedComponent, setSelectedComponent] = useState(null);
   //Prev mouse x Position
@@ -31,7 +31,6 @@ const Range = ({ minPrice, maxPrice }) => {
     setSelectedComponent(selector);
     setMoveAllowed(true);
   };
-
   let mousemove = (e) => {
     getMouseDirection(e);
     moveSelector(e);
@@ -50,47 +49,6 @@ const Range = ({ minPrice, maxPrice }) => {
       }
     }
   };
-
-  // let move = (e,  direction) => {
-  //   if(!canMove(direction)) return
-  //   let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
-  //   if(selectedComponent?.id === "selector-left") {
-  //     console.log(getValue,  getXComponent() )
-  //     getXComponent() > 0  && setXComponent()((e.clientX - 300 - 10)*100/300);
-  //     if ( getXComponent() > 0 ) {
-  //       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
-  //     } else if(getXComponent() === 0) {
-  //       setComponentValue()({...getComponentValue(), actual:minPrice})
-  //     }
-  //   } else {
-  //     getXComponent() < 100 && setXComponent()((e.clientX - 300 - 10)*100/300);
-  //     if ( getXComponent() < 100 ) {
-  //       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
-  //     } else if(getXComponent() ===  100) {
-  //       setComponentValue()({...getComponentValue(), actual:maxPrice})
-  //     }  
-  //   }
-   
-  // }
-
-  
-  // let canMove = (direction) => {
-  //   switch(direction) {
-  //     case 'right':
-  //       if( selectedComponent.id==='selector-left' ) {
-  //         return leftComponentValue.actual < rightComponentValue.actual -1 ? true : false;
-  //       } else {
-  //         return true;
-  //       }
-  //     case 'left':
-  //       if( selectedComponent.id==='selector-right' ) {
-  //         return rightComponentValue.actual > leftComponentValue.actual +1 ? true : false
-  //       } else {
-  //         return true;
-  //       }
-  //   }
-  // };
-
   let canMoveLeft = () => {
     if( selectedComponent.id==='selector-right' ) {
       return rightComponentValue.actual > leftComponentValue.actual +1;
@@ -103,7 +61,6 @@ const Range = ({ minPrice, maxPrice }) => {
     }
     return true;
   };
-
   let moveLeft = (e) => {
     if(!canMoveLeft()) return
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
@@ -114,7 +71,6 @@ const Range = ({ minPrice, maxPrice }) => {
       setComponentValue()({...getComponentValue(), actual:minPrice})
     }
   };
-
   let moveRight = (e) => {
     if(!canMoveRight()) return
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
@@ -125,7 +81,6 @@ const Range = ({ minPrice, maxPrice }) => {
       setComponentValue()({...getComponentValue(), actual:maxPrice})
     }       
   };
-
   let setXComponent = () => {
     return selectedComponent?.id === "selector-right"
       ? setXRightComponent
@@ -154,11 +109,9 @@ const Range = ({ minPrice, maxPrice }) => {
     }
     setOldXMousePosition(e.pageX);
   };
-
   let mouseup = (e) => {
     setMoveAllowed(false);
   };
-
   let changePrice = (e) => {
     let newValue =  parseInt(e.target.value);
     switch(selectedComponent.id) {
@@ -202,6 +155,7 @@ const Range = ({ minPrice, maxPrice }) => {
           actualValue={leftComponentValue.actual}
           mouseDown={mousedown}
           changePrice={changePrice}
+          fixedType={fixedType}
         />
         <BarRange />
         <SelectorRange
@@ -212,6 +166,7 @@ const Range = ({ minPrice, maxPrice }) => {
           actualValue={rightComponentValue.actual}
           mouseDown={mousedown}
           changePrice={changePrice}
+          fixedType={fixedType}
         />
       </div>
     </div>

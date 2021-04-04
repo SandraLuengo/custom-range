@@ -9,6 +9,7 @@ const SelectorRange = ({
   actualValue,
   mouseDown,
   changePrice,
+  fixedType,
 }) => {
   const selector = useRef(null);
   return (
@@ -23,13 +24,19 @@ const SelectorRange = ({
         className={`selector--range selector--range--${type}`}
         id={`selector-${type}`}
       ></div>
-      <input
-        onChange={changePrice}
-        onMouseDown={(e) => mouseDown(e, selector.current)}
-        className="selector--value"
-        value={actualValue || ''}
-        style={{ left: `${position}%` }}
-      />
+      {fixedType ? (
+        <label className="selector--value" style={{ left: `${position}%` }}>
+          {actualValue || ""}
+        </label>
+      ) : (
+        <input
+          onChange={changePrice}
+          onMouseDown={(e) => mouseDown(e, selector.current)}
+          className="selector--value"
+          value={actualValue || ""}
+          style={{ left: `${position}%` }}
+        />
+      )}
     </div>
   );
 };
