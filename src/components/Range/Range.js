@@ -51,6 +51,59 @@ const Range = ({ minPrice, maxPrice }) => {
     }
   };
 
+  // let move = (e,  direction) => {
+  //   if(!canMove(direction)) return
+  //   let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
+  //   if(selectedComponent?.id === "selector-left") {
+  //     console.log(getValue,  getXComponent() )
+  //     getXComponent() > 0  && setXComponent()((e.clientX - 300 - 10)*100/300);
+  //     if ( getXComponent() > 0 ) {
+  //       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
+  //     } else if(getXComponent() === 0) {
+  //       setComponentValue()({...getComponentValue(), actual:minPrice})
+  //     }
+  //   } else {
+  //     getXComponent() < 100 && setXComponent()((e.clientX - 300 - 10)*100/300);
+  //     if ( getXComponent() < 100 ) {
+  //       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
+  //     } else if(getXComponent() ===  100) {
+  //       setComponentValue()({...getComponentValue(), actual:maxPrice})
+  //     }  
+  //   }
+   
+  // }
+
+  
+  // let canMove = (direction) => {
+  //   switch(direction) {
+  //     case 'right':
+  //       if( selectedComponent.id==='selector-left' ) {
+  //         return leftComponentValue.actual < rightComponentValue.actual -1 ? true : false;
+  //       } else {
+  //         return true;
+  //       }
+  //     case 'left':
+  //       if( selectedComponent.id==='selector-right' ) {
+  //         return rightComponentValue.actual > leftComponentValue.actual +1 ? true : false
+  //       } else {
+  //         return true;
+  //       }
+  //   }
+  // };
+
+  let canMoveLeft = () => {
+    if( selectedComponent.id==='selector-right' ) {
+      return rightComponentValue.actual > leftComponentValue.actual +1;
+    } 
+    return true;
+  };
+  let canMoveRight = () => {
+    if( selectedComponent.id==='selector-left' ) {
+      return leftComponentValue.actual < rightComponentValue.actual -1;
+    }
+    return true;
+  };
+
   let moveLeft = (e) => {
     if(!canMoveLeft()) return
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
@@ -73,20 +126,6 @@ const Range = ({ minPrice, maxPrice }) => {
     }       
   };
 
-  let canMoveLeft = () => {
-    if( selectedComponent.id==='selector-right' ) {
-      return rightComponentValue.actual > leftComponentValue.actual +1 ? true : false
-    } else {
-      return true;
-    }
-  };
-  let canMoveRight = () => {
-    if( selectedComponent.id==='selector-left' ) {
-      return leftComponentValue.actual < rightComponentValue.actual -1 ? true : false;
-    } else {
-      return true;
-    }
-  };
   let setXComponent = () => {
     return selectedComponent?.id === "selector-right"
       ? setXRightComponent
@@ -122,27 +161,29 @@ const Range = ({ minPrice, maxPrice }) => {
 
   let changePrice = (e) => {
     let newValue =  parseInt(e.target.value);
-    if(selectedComponent.id === "selector-left") {
-      if(newValue <= 0) { 
-        newValue = minPrice;
-      } else if(newValue >= rightComponentValue.actual) {
-        newValue = rightComponentValue.actual - 1; 
-      } 
-      setLeftComponentValue({...getComponentValue(), actual:newValue});
-      if(newValue < minPrice) {
-        setXLeftComponent(((minPrice - minPrice) * 100) / (maxPrice - minPrice));
-      } else {
-        setXLeftComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
-      }
-    } else if( selectedComponent.id === "selector-right") {
-      if(newValue >= 100) { 
-        newValue = maxPrice;
-      } else if(newValue <= leftComponentValue.actual) {
-        newValue = leftComponentValue.actual + 1;
-      } 
-     
-      setRightComponentValue({...getComponentValue(), actual:newValue});
-      setXRightComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
+    switch(selectedComponent.id) {
+      case "selector-left":
+        if(newValue <= 0) { 
+          newValue = minPrice;
+        } else if(newValue >= rightComponentValue.actual) {
+          newValue = rightComponentValue.actual - 1; 
+        } 
+        setLeftComponentValue({...getComponentValue(), actual:newValue});
+        if(newValue < minPrice) {
+          setXLeftComponent(((minPrice - minPrice) * 100) / (maxPrice - minPrice));
+        } else {
+          setXLeftComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
+        }
+        return;
+      case "selector-right":
+        if(newValue >= 100) { 
+          newValue = maxPrice;
+        } else if(newValue <= leftComponentValue.actual) {
+          newValue = leftComponentValue.actual + 1;
+        } 
+        setRightComponentValue({...getComponentValue(), actual:newValue});
+        setXRightComponent(((newValue - minPrice) * 100) / (maxPrice - minPrice));
+        return;
     }
   };
 
