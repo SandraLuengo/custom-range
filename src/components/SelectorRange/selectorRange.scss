@@ -17,13 +17,8 @@ $selector-width: 10px;
     &:active {
       cursor: grabbing;
     }
-    &--left {
-      background: red;
-      position: absolute;
-      z-index: 1;
-    }
-    &--right {
-      background: blue;
+    &--left, &--right {
+      background: black;
       position: absolute;
       z-index: 1;
     }

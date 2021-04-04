@@ -23,13 +23,24 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
   });
   //mouse State
   const [moveAllowed, setMoveAllowed] = useState(false);
+  const [mouseDiff, setMouseDiff] = useState(0);
 
   const rangeComponent = useRef(null);
   let xDirection = "";
 
+  useEffect(() => {
+    setLeftComponentValue({actual:minPrice, min:minPrice, max:maxPrice});
+    setRightComponentValue({actual:maxPrice, min:minPrice, max:maxPrice});
+  },[minPrice,maxPrice])
+
   let mousedown = (e, selector) => {
     setSelectedComponent(selector);
     setMoveAllowed(true);
+    if(e.clientX > 300) {
+      setMouseDiff(e.clientX - 300)
+    } else if( e.clientX < 300) {
+      setMouseDiff(e.clientX - 300)
+    }
   };
   let mousemove = (e) => {
     getMouseDirection(e);
@@ -63,8 +74,10 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
   };
   let moveLeft = (e) => {
     if(!canMoveLeft()) return
+    let barRangeWidth = rangeComponent.current.offsetWidth;
+    let barLeftPosition =  rangeComponent.current.offsetLeft;
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
-    getXComponent() > 0 && setXComponent()((e.clientX - 300 - 10)*100/300);
+    getXComponent() > 0 && setXComponent()((e.clientX -  barLeftPosition)*100/barRangeWidth);
     if ( getXComponent() > 0 ) {
       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
     } else if(getXComponent() === 0) {
@@ -73,8 +86,10 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
   };
   let moveRight = (e) => {
     if(!canMoveRight()) return
+    let barRangeWidth = rangeComponent.current.offsetWidth;
+    let barLeftPosition =  rangeComponent.current.offsetLeft;
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
-    getXComponent() < 100 && setXComponent()((e.clientX - 300 - 10)*100/300);
+    getXComponent() < 100 && setXComponent()((e.clientX -  barLeftPosition) * 100 / barRangeWidth);
     if ( getXComponent() < 100 ) {
       setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
     } else if(getXComponent() ===  100) {
