@@ -23,10 +23,10 @@ const Range = ({ minPrice, maxPrice }) => {
   });
   //mouse State
   const [moveAllowed, setMoveAllowed] = useState(false);
-  const [prevPosition, setPrevPosition] = useState(0)
 
   const rangeComponent = useRef(null);
   let xDirection = "";
+
   let mousedown = (e, selector) => {
     setSelectedComponent(selector);
     setMoveAllowed(true);
@@ -36,16 +36,14 @@ const Range = ({ minPrice, maxPrice }) => {
     getMouseDirection(e);
     moveSelector(e);
   };
-
   let moveSelector = (e) => {
-    let percentage = 300 / (maxPrice - minPrice);
     if (moveAllowed) {
       switch (xDirection) {
         case "left":
-          moveLeft(percentage);
+          moveLeft(e);
           return;
         case "right":
-          moveRight(e,percentage);
+          moveRight(e);
           return;
         default:
           return;
@@ -53,59 +51,26 @@ const Range = ({ minPrice, maxPrice }) => {
     }
   };
 
-  let moveLeft = (percentage) => {
-    if(canMoveLeft()) {
-      if (getXComponent() > 0 && getXComponent() % percentage < percentage - 1) {
-        setComponentValue()({...getComponentValue(), actual:getComponentValue().actual-=1})
-      } else if(getXComponent() === 0) {
-        setComponentValue()({...getComponentValue(), actual:minPrice})
-      }
-      setXComponent()(
-        getXComponent() > 0 ? getXComponent() - (percentage - 1) : 0
-      );
+  let moveLeft = (e) => {
+    if(!canMoveLeft()) return
+    let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
+    getXComponent() > 0 && setXComponent()((e.clientX - 300 - 10)*100/300);
+    if ( getXComponent() > 0 ) {
+      setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
+    } else if(getXComponent() === 0) {
+      setComponentValue()({...getComponentValue(), actual:minPrice})
     }
   };
 
-  let moveRight = (e,percentage) => {
-    let percentageA = 100 / (maxPrice - minPrice);
-    
-   
-    //console.log(getXComponent() , percentageA)
-    if(canMoveRight()) {
-      if(Math.round(getXComponent() - prevPosition) === 1) {
-        if ( getXComponent() < 100 ) {
-          setComponentValue()({...getComponentValue(), actual:getComponentValue().actual+=1})
-        } else if(getXComponent() === 100) {
-          setComponentValue()({...getComponentValue(), actual:maxPrice})
-        }
-        setPrevPosition(Math.round(getXComponent()));
-      }
-      //if ( getXComponent() < 100 &&  getXComponent() % percentage < percentage - 1 ) {
-      // if ( getXComponent() < 100 &&  getXComponent() % percentageA === 0 ) {
-      //    setComponentValue()({...getComponentValue(), actual:getComponentValue().actual+=1})
-      // } else if(getXComponent() === 100) {
-      //   setComponentValue()({...getComponentValue(), actual:maxPrice})
-      // }
-      // setXComponent()(
-      //   getXComponent() < 100 ? getXComponent() + (percentage - 1) : 100
-      // );
-
-
-     // let price80 = Math.round((Math.round(xLeftComponent) * (maxPrice -1) )/100);
-      let getValue = minPrice + (maxPrice - minPrice) * (xLeftComponent/100);
-     // console.log(((Math.round(xLeftComponent) - minPrice) * 100) / (maxPrice - minPrice));
-      //console.log(e.clientX, (e.clientX - 300 - 10 )*100/300)
-      setXLeftComponent((e.clientX - 300 - 10)*100/300);
-
-       if ( getXComponent() < 100 ) {
-          setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
-        } else if(getXComponent() === 100) {
-          setComponentValue()({...getComponentValue(), actual:maxPrice})
-        }
-
-      //setXLeftComponent(getXComponent() + ((300/(maxPrice - minPrice)))/10);
-     // setXLeftComponent(((getComponentValue().actual - minPrice) * 100) / (maxPrice - minPrice));
-    } 
+  let moveRight = (e) => {
+    if(!canMoveRight()) return
+    let getValue = minPrice + (maxPrice - minPrice) * (getXComponent()/100);
+    getXComponent() < 100 && setXComponent()((e.clientX - 300 - 10)*100/300);
+    if ( getXComponent() < 100 ) {
+      setComponentValue()({...getComponentValue(), actual:Math.round(getValue)})
+    } else if(getXComponent() ===  100) {
+      setComponentValue()({...getComponentValue(), actual:maxPrice})
+    }       
   };
 
   let canMoveLeft = () => {
@@ -115,7 +80,6 @@ const Range = ({ minPrice, maxPrice }) => {
       return true;
     }
   };
-
   let canMoveRight = () => {
     if( selectedComponent.id==='selector-left' ) {
       return leftComponentValue.actual < rightComponentValue.actual -1 ? true : false;
@@ -123,7 +87,6 @@ const Range = ({ minPrice, maxPrice }) => {
       return true;
     }
   };
-
   let setXComponent = () => {
     return selectedComponent?.id === "selector-right"
       ? setXRightComponent
