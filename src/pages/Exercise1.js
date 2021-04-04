@@ -7,7 +7,7 @@ const Exercise1 = () => {
   return (
     <div className="exercises">
       Exercise1
-      <Range minPrice={6} maxPrice={80} selectorWidth={10}/>
+      <Range minPrice={6} maxPrice={80} />
       <button>
         <Link to={"/"}>Home</Link>
       </button>

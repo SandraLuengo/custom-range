@@ -11,7 +11,6 @@ const SelectorRange = ({
   changePrice,
 }) => {
   const selector = useRef(null);
-
   return (
     <div className="selector">
       <div
