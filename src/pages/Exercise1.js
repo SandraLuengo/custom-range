@@ -4,7 +4,7 @@ import { Range } from "../components";
 import "./exercises.scss";
 
 const Exercise1 = () => {
-  
+
   const [priceData, setPriceData] = useState({ min: 1, max: 1 });
 
   const fetchData = async () => {
@@ -19,13 +19,13 @@ const Exercise1 = () => {
  
   return (
     <div className="exercises">
-      Exercise1 - Min price 1
+      <h1>Normal Range:</h1>
       <Range
         minPrice={priceData.min}
         maxPrice={priceData.max}
         fixedType={false}
       />
-      <button>
+      <button className="exercises--btn">
         <Link to={"/"}>Home</Link>
       </button>
     </div>
