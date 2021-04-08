@@ -32,6 +32,7 @@ const SelectorRange = ({
         <input
           onChange={changePrice}
           onMouseDown={(e) => mouseDown(e, selector.current)}
+          id={`input-${type}`}
           className="selector--value"
           value={actualValue || ""}
           style={{ left: `${position}%` }}

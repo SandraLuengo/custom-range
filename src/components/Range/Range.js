@@ -3,28 +3,22 @@ import { SelectorRange, BarRange } from "../../components";
 import "./range.scss";
 
 const Range = ({ minPrice, maxPrice, fixedType }) => {
-  // Selection seleccionado
-  const [selectedComponent, setSelectedComponent] = useState(null);
-  //Prev mouse x Position
+
+  const [selectedComponent, setSelectedComponent] = useState('selector-right');
   const [oldXMousePosition, setOldXMousePosition] = useState(0);
-  // Left component - ROJO
   const [xLeftComponent, setXLeftComponent] = useState(0);
   const [leftComponentValue, setLeftComponentValue] = useState({
     actual: minPrice,
     min: minPrice,
     max: maxPrice,
   });
-  // Right component - AZUL
   const [xRightComponent, setXRightComponent] = useState(100);
   const [rightComponentValue, setRightComponentValue] = useState({
     actual: maxPrice,
     min: minPrice,
     max: maxPrice,
   });
-  //mouse State
   const [moveAllowed, setMoveAllowed] = useState(false);
-  const [mouseDiff, setMouseDiff] = useState(0);
-
   const rangeComponent = useRef(null);
   let xDirection = "";
 
@@ -36,16 +30,13 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
   let mousedown = (e, selector) => {
     setSelectedComponent(selector);
     setMoveAllowed(true);
-    if(e.clientX > 300) {
-      setMouseDiff(e.clientX - 300)
-    } else if( e.clientX < 300) {
-      setMouseDiff(e.clientX - 300)
-    }
   };
+
   let mousemove = (e) => {
     getMouseDirection(e);
     moveSelector(e);
   };
+
   let moveSelector = (e) => {
     if (moveAllowed) {
       switch (xDirection) {
@@ -60,18 +51,21 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
       }
     }
   };
+
   let canMoveLeft = () => {
     if( selectedComponent.id==='selector-right' ) {
       return rightComponentValue.actual > leftComponentValue.actual +1;
     } 
     return true;
   };
+
   let canMoveRight = () => {
     if( selectedComponent.id==='selector-left' ) {
       return leftComponentValue.actual < rightComponentValue.actual -1;
     }
     return true;
   };
+
   let moveLeft = (e) => {
     if(!canMoveLeft()) return
     let barRangeWidth = rangeComponent.current.offsetWidth;
@@ -84,6 +78,7 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
       setComponentValue()({...getComponentValue(), actual:minPrice})
     }
   };
+
   let moveRight = (e) => {
     if(!canMoveRight()) return
     let barRangeWidth = rangeComponent.current.offsetWidth;
@@ -96,16 +91,19 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
       setComponentValue()({...getComponentValue(), actual:maxPrice})
     }       
   };
+
   let setXComponent = () => {
     return selectedComponent?.id === "selector-right"
       ? setXRightComponent
       : setXLeftComponent;
   };
+
   let getXComponent = () => {
     return selectedComponent?.id === "selector-right"
       ? xRightComponent
       : xLeftComponent;
   };
+
   let setComponentValue = () =>
     selectedComponent.id === "selector-right"
       ? setRightComponentValue
@@ -124,9 +122,11 @@ const Range = ({ minPrice, maxPrice, fixedType }) => {
     }
     setOldXMousePosition(e.pageX);
   };
+
   let mouseup = (e) => {
     setMoveAllowed(false);
   };
+
   let changePrice = (e) => {
     let newValue =  parseInt(e.target.value);
     switch(selectedComponent.id) {

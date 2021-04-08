@@ -10,7 +10,7 @@ const Exercise2 = () => {
     <div className="exercises">
       Exercise1 - Min price 1
       <Range minPrice={min} maxPrice={max} fixedType={true} />
-      <button>
+      <button className="exercises--btn">
         <Link to={"/"}>Home</Link>
       </button>
     </div>
