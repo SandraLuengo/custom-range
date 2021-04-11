@@ -1,122 +1,192 @@
 import React, { useEffect, useState, useRef } from "react";
 import { SelectorRange, BarRange } from "../../components";
+import useDebounce from "../hooks/useDebounce.js";
 import "./range.scss";
 
-const Range = ({ min, max, selectorWidth }) => {
-  const [leftSelector, setLeftSelector] = useState(null);
-  const [rightSelector, setRightSelector] = useState(null);
-  const [rangeXMin, setRangeXMin] = useState(null);
-  const [rangeXMax, setRangeXMax] = useState(null);
+const Range = ({ minPrice, maxPrice, fixedType }) => {
+  const [selectedComponent, setSelectedComponent] = useState("selector-right");
+  const [oldXMousePosition, setOldXMousePosition] = useState(0);
+  const [xLeftComponent, setXLeftComponent] = useState(0);
+  const [xRightComponent, setXRightComponent] = useState(100);
+  const [extremesValues, setExtremesValues] = useState({
+    left: {
+      min: minPrice,
+      max: maxPrice,
+    },
+    right: {
+      min: minPrice,
+      max: maxPrice,
+    },
+  });
+  const [moveAllowed, setMoveAllowed] = useState(false);
   const rangeComponent = useRef(null);
-  let previousX = null;
-  let selectedRangeElement = null;
-  let selectedRangeClass = "";
-  let moveFlag = false;
-  let mouseX = null;
-  let barWidth = 300;
-  let leftSelectorRight = null;
-  let rightSelectorLeft = null;
-  let leftSelectorLeft = null;
 
-  let getLeftSelectorRef = (ref) => {
-    setLeftSelector(ref.current);
-  };
-  let getRightSelectorRef = (ref) => {
-    setRightSelector(ref.current);
-  };
+  const [actualPosition, setActualPosition] = useState({
+    left: minPrice,
+    right: maxPrice,
+  });
+  const debouncedSearchTerm = useDebounce(actualPosition, 500);
+
+  let xDirection = "";
 
   useEffect(() => {
-    leftSelector?.addEventListener("mousedown", (e) =>
-      mousedown(e, leftSelector)
-    );
-    rightSelector?.addEventListener("mousedown", (e) =>
-      mousedown(e, rightSelector)
-    );
-    document.addEventListener("mousemove", (e) => mousemove(e));
-    document.addEventListener("mouseup", (e) => mouseup(e));
+    debouncedSearchTerm && changePrice(actualPosition);
+  }, [debouncedSearchTerm]);
 
-    setRangeXMin(rangeComponent.current.getBoundingClientRect().left);
-    setRangeXMax(rangeComponent.current.getBoundingClientRect().right);
-  }, [leftSelector, rightSelector]);
+  useEffect(() => {
+    setExtremesValues({
+      left: { min: minPrice, max: maxPrice },
+      right: { min: minPrice, max: maxPrice },
+    });
+    setActualPosition({ ...actualPosition, left: minPrice, right: maxPrice });
+  }, [minPrice, maxPrice]);
 
   let mousedown = (e, selector) => {
-    previousX = e.clientX;
-    selectedRangeElement = selector;
-    selectedRangeClass = selectedRangeElement.className
-      .replace("selector-range", "")
-      .trim();
-    moveFlag = true;
+    setSelectedComponent(selector);
+    setMoveAllowed(true);
   };
 
   let mousemove = (e) => {
-    if (moveFlag) {
-      leftSelectorRight = leftSelector.getBoundingClientRect().right;
-      rightSelectorLeft = rightSelector.getBoundingClientRect().left;
-      leftSelectorLeft = leftSelector.getBoundingClientRect().left;
+    getMouseDirection(e);
+    moveSelector(e);
+  };
 
-      mouseX = e.clientX;
-     
-      if (selectedRangeClass === "selector-range--left") {
-
-        if (leftSelectorRight < rightSelectorLeft  && mouseX >= rangeXMin - selectorWidth  ) {        
-          selectedRangeElement.style.left = `${getPercentage()}`;  
-          console.log(leftSelectorRight, rightSelectorLeft)
-
-        } else if (leftSelectorRight <= rightSelectorLeft && mouseX < leftSelectorRight) {
-          //selectedRangeElement.style.left = `${getPercentage()}`;
-        }
-      } else if (selectedRangeClass === "selector-range--right") {
-        if (mouseX <= rangeXMax + selectorWidth && rightSelectorLeft > leftSelectorRight) {
-          selectedRangeElement.style.left = `${getPercentage()}`;
-          
-        }
+  let moveSelector = (e) => {
+    let barRangeWidth = rangeComponent.current.offsetWidth;
+    let barLeftPosition = rangeComponent.current.offsetLeft;
+    let getValue = minPrice + (maxPrice - minPrice) * (getXComponent() / 100);
+    if (moveAllowed) {
+      switch (xDirection) {
+        case "left":
+          moveToLeft(e, barRangeWidth, barLeftPosition, getValue);
+          return;
+        case "right":
+          moveToRight(e, barRangeWidth, barLeftPosition, getValue);
+          return;
+        default:
+          return;
       }
-
-    }
-  };
-  let mouseup = (e) => (moveFlag = false);
-
-  let getPercentage = () => {
-    let percentage = ((mouseX - rangeXMin) * 100) / (rangeXMax - rangeXMin);
-    if (percentage > 100) {
-      return 100 + "%";
-    } else if (percentage <= 0) {
-      return `calc(${0}% - ${selectorWidth}px)`;
-    } else {
-      return percentage + "%";
     }
   };
 
-  let getPrice = () => {
-    let percentage = ((mouseX - rangeXMin) * 100) / (rangeXMax - rangeXMin);
-    if(percentage > 100) {
-        percentage =  100;
-    } else if ( percentage < 0) {
-      percentage =  0;
-    } 
+  let canMoveToLeft = () => {
+    if (selectedComponent.id === "selector-right") {
+      return actualPosition.right > actualPosition.left + 1;
+    }
+    return true;
+  };
 
-    return `${Math.round((percentage * max) / 100)}€`;
+  let canMoveToRight = () => {
+    if (selectedComponent.id === "selector-left") {
+      return actualPosition.left < actualPosition.right - 1;
+    }
+    return true;
+  };
+
+  let moveToLeft = (e, barRangeWidth, barLeftPosition, getValue) => {
+    if (!canMoveToLeft()) return;
+    getXComponent() > 0 &&
+      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
+    if (getXComponent() > 0) {
+      changeActualPosition(Math.round(getValue));
+    } else if (getXComponent() === 0) {
+      changeActualPosition(Math.round(minPrice));
+    }
+  };
+
+  let moveToRight = (e, barRangeWidth, barLeftPosition, getValue) => {
+    if (!canMoveToRight()) return;
+    getXComponent() < 100 &&
+      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
+    if (getXComponent() < 100) {
+      changeActualPosition(Math.round(getValue));
+    } else if (getXComponent() === 100) {
+      changeActualPosition(maxPrice);
+    }
+  };
+
+  let setXComponent = () => {
+    return selectedComponent?.id === "selector-right"
+      ? setXRightComponent
+      : setXLeftComponent;
+  };
+
+  let getXComponent = () => {
+    return selectedComponent?.id === "selector-right"
+      ? xRightComponent
+      : xLeftComponent;
+  };
+
+  let changeActualPosition = (value) => {
+    selectedComponent.id === "selector-right"
+      ? setActualPosition({ ...actualPosition, right: value })
+      : setActualPosition({ ...actualPosition, left: value });
+  };
+
+  let getMouseDirection = (e) => {
+    if (e.pageX < oldXMousePosition) {
+      xDirection = "left";
+    } else if (e.pageX > oldXMousePosition) {
+      xDirection = "right";
+    }
+    setOldXMousePosition(e.pageX);
+  };
+
+  let mouseup = (e) => {
+    setMoveAllowed(false);
+  };
+
+  let changePrice = (newValue) => {
+    const { left, right } = newValue;
+    switch (selectedComponent.id) {
+      case "selector-left":
+        if (left <= 0) {
+          setActualPosition({ ...actualPosition, left: minPrice });
+        } else if (left >= right) {
+          setActualPosition({ ...actualPosition, left: right - 1 });
+        }
+        setXLeftComponent(((left - minPrice) * 100) / (maxPrice - minPrice));
+        return;
+      case "selector-right":
+        if (right >= 100) {
+          setActualPosition({ ...actualPosition, right: maxPrice });
+        } else if (right <= left) {
+          setActualPosition({ ...actualPosition, right: left + 1 });
+        }
+        setXRightComponent(((right - minPrice) * 100) / (maxPrice - minPrice));
+        return;
+    }
   };
 
   return (
-    <div className="range">
+    <div
+      className="range"
+      onMouseMove={(e) => mousemove(e)}
+      onMouseUp={(e) => mouseup(e)}
+    >
       <div ref={rangeComponent} className="range--component">
         <SelectorRange
+          position={xLeftComponent}
           type={"left"}
-          value={min}
-          selectorFunction={getLeftSelectorRef}
+          minValue={extremesValues.left.min}
+          maxValue={extremesValues.left.max}
+          mouseDown={mousedown}
+          fixedType={fixedType}
+          setActualPosition={setActualPosition}
+          actualPosition={actualPosition}
         />
         <BarRange />
         <SelectorRange
+          position={xRightComponent}
           type={"right"}
-          value={max}
-          selectorFunction={getRightSelectorRef}
+          minValue={extremesValues.right.min}
+          maxValue={extremesValues.right.max}
+          mouseDown={mousedown}
+          fixedType={fixedType}
+          setActualPosition={setActualPosition}
+          actualPosition={actualPosition}
         />
       </div>
-      {/* <div className="range--prices">
-        <input className="range--prices--input" type="text" value={max} />
-        <input className="range--prices--input" type="text" value={min} />
-      </div> */}
     </div>
   );
 };

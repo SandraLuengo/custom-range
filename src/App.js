@@ -1,17 +1,19 @@
 import { hot } from "react-hot-loader/root";
 import React from "react";
 import { Link } from "react-router-dom";
-import "./main.css";
+import "./main.scss";
 
 const App = (props) => {
   return (
     <div>
-      <p>Mango Outlet - Sngular</p>
-      <button>
-        <Link to={"/exercise1"}>Exercise 1</Link>
+      <h1>Range Component</h1>
+      <button className="btn">
+        <Link to={"/exercise1"}>Normal Range</Link>
       </button>
-      <button>
-        <Link to={"/exercise2"}>Exercise 2</Link>
+      <button disabled className="btn btn--disabled">
+        <Link onClick={(e) => e.preventDefault()} to={"/exercise2"}>
+          Fixed values range
+        </Link>
       </button>
     </div>
   );
