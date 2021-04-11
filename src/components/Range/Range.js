@@ -26,7 +26,7 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   });
   const debouncedSearchTerm = useDebounce(actualPosition, 500);
 
-  const [positionsArray] = useState(priceArray);
+  const [positionsArray, setPositionArray] = useState(priceArray);
   const [arrayLeftState, setArrayLeftState] = useState(0);
   const [arrayRightState, setArrayRightState] = useState(
     priceArray?.length - 1
@@ -44,7 +44,8 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
       right: { min: minPrice, max: maxPrice },
     });
     setActualPosition({ ...actualPosition, left: minPrice, right: maxPrice });
-  }, [minPrice, maxPrice]);
+    fixedType && setPositionArray(priceArray);
+  }, [minPrice, maxPrice, priceArray]);
 
   let mousedown = (e, selector) => {
     setSelectedComponent(selector);
