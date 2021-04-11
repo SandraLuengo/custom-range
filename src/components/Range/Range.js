@@ -26,9 +26,11 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   });
   const debouncedSearchTerm = useDebounce(actualPosition, 500);
 
-  const [positionsArray, setPositionsArray] = useState(priceArray);
+  const [positionsArray] = useState(priceArray);
   const [arrayLeftState, setArrayLeftState] = useState(0);
-  const [arrayRightState, setArrayRightState] = useState(priceArray.length - 1);
+  const [arrayRightState, setArrayRightState] = useState(
+    priceArray?.length - 1
+  );
 
   let xDirection = "";
 
