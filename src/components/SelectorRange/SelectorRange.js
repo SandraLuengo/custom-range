@@ -6,10 +6,10 @@ const SelectorRange = ({
   position,
   maxValue,
   minValue,
-  actualValue,
   mouseDown,
-  changePrice,
   fixedType,
+  setActualPosition,
+  actualPosition
 }) => {
   const selector = useRef(null);
   return (
@@ -19,22 +19,22 @@ const SelectorRange = ({
         style={{ left: `${position}%` }}
         max-value={maxValue}
         min-value={minValue}
-        actual-value={actualValue}
+        actual-value={type==='left' ? actualPosition.left : actualPosition.right}
         ref={selector}
         className={`selector--range selector--range--${type}`}
         id={`selector-${type}`}
       ></div>
       {fixedType ? (
         <label className="selector--value" style={{ left: `${position}%` }}>
-          {actualValue || ""}
+          {type==='left' ? actualPosition.left : actualPosition.right}
         </label>
       ) : (
         <input
-          onChange={changePrice}
+          onChange={(e) => setActualPosition({ ...actualPosition, [type]: parseInt(e.target.value) || 0})}
           onMouseDown={(e) => mouseDown(e, selector.current)}
           id={`input-${type}`}
           className="selector--value"
-          value={actualValue || ""}
+          value={type==='left' ? actualPosition.left || "" : actualPosition.right || "" }
           style={{ left: `${position}%` }}
         />
       )}
