@@ -3,18 +3,20 @@ import React from "react";
 import { Link } from "react-router-dom";
 import "./main.scss";
 
-const App = (props) => {
+const App = () => {
   return (
-    <div>
+    <div className="home">
       <h1>Range Component</h1>
-      <button className="btn">
-        <Link to={"/exercise1"}>Normal Range</Link>
-      </button>
-      <button  className="btn">
-        <Link to={"/exercise2"}>
-          Fixed values range
-        </Link>
-      </button>
+      <div>
+        <button className="btn">
+          <Link to={"/exercise1"}>Normal Range</Link>
+        </button>
+      </div>
+      <div>
+        <button className="btn">
+          <Link to={"/exercise2"}>Fixed values range</Link>
+        </button>
+      </div>
     </div>
   );
 };

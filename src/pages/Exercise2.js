@@ -28,7 +28,7 @@ const Exercise2 = () => {
         fixedType={true}
       />
       <button className="exercises--btn">
-        <Link to={"/"}>Home</Link>
+        <Link to={"/"}>Menu</Link>
       </button>
     </div>
   );

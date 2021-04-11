@@ -19,14 +19,14 @@ const Exercise1 = () => {
  
   return (
     <div className="exercises">
-      <h1>Normal Range:</h1>
+      <h1>Normal Range</h1>
       <Range
         minPrice={priceData.min}
         maxPrice={priceData.max}
         fixedType={false}
       />
       <button className="exercises--btn">
-        <Link to={"/"}>Home</Link>
+        <Link to={"/"}>Menu</Link>
       </button>
     </div>
   );
