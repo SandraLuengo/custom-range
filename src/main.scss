@@ -8,6 +8,14 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
+.home {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .btn {
   background-color: #4caf50;
   border: none;
@@ -19,6 +27,7 @@ body {
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
+  border-radius: 4px;
   &--disabled {
     background-color: #8cb28e;
   }
