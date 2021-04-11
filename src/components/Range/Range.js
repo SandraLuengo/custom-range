@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { SelectorRange, BarRange } from "../../components";
-import useDebounce from "../hooks/useDebounce.js";
+import useDebounce from "../../hooks/useDebounce.js";
 import "./range.scss";
 
 const Range = ({ minPrice, maxPrice, fixedType }) => {
