@@ -10,8 +10,8 @@ const App = (props) => {
       <button className="btn">
         <Link to={"/exercise1"}>Normal Range</Link>
       </button>
-      <button disabled className="btn btn--disabled">
-        <Link onClick={(e) => e.preventDefault()} to={"/exercise2"}>
+      <button  className="btn">
+        <Link to={"/exercise2"}>
           Fixed values range
         </Link>
       </button>
