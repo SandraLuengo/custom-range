@@ -7,7 +7,7 @@ const App = () => {
   return (
     <div className="home">
       <h1>Range Component</h1>
-      <div>
+      <div data-testid='app'>
         <button className="btn">
           <Link to={"/exercise1"}>Normal Range</Link>
         </button>
