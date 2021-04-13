@@ -11,7 +11,10 @@
   "jest": {
     "moduleNameMapper": {
       "^.+\\.(css|less|scss)$": "identity-obj-proxy"
-    }
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.ts"
+    ]
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.10",
