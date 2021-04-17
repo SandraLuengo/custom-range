@@ -1,77 +1,45 @@
 import React, { useEffect, useState, useRef } from "react";
 import { SelectorRange, BarRange } from "../../components";
+import initialState from "../../utils/initialState.js";
+import { canMoveTo } from "../../utils/rangeFunctions.js";
 import useDebounce from "../../hooks/useDebounce.js";
 import "./range.scss";
 
-const initialState = () => ({
-  selectedComponent: '',
-  oldXMousePosition: '',
-  xLeftComponent: '', 
-  xRightComponent: '',
-  extremesValues: '',
-  moveAllowed: '',
-  rangeComponent: '',
-  actualPosition: '',
-  positionsArray:'',
-  arrayLeftState: '',
-  arrayRightState: '',
-});
-
 const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
-  const [selectedComponent, setSelectedComponent] = useState("selector-right");
-  const [oldXMousePosition, setOldXMousePosition] = useState(0);
-  const [xLeftComponent, setXLeftComponent] = useState(0);
-  const [xRightComponent, setXRightComponent] = useState(100);
-  const [extremesValues, setExtremesValues] = useState({
-    left: {
-      min: minPrice,
-      max: maxPrice,
-    },
-    right: {
-      min: minPrice,
-      max: maxPrice,
-    },
-  });
-  const [moveAllowed, setMoveAllowed] = useState(false);
-  const rangeComponent = useRef(null);
-  const [actualPosition, setActualPosition] = useState({
-    left: minPrice,
-    right: maxPrice,
-  });
-  const [positionsArray, setPositionArray] = useState(priceArray);
-  const [arrayLeftState, setArrayLeftState] = useState(0);
-  const [arrayRightState, setArrayRightState] = useState(
-    priceArray?.length - 1
+  const [state, setState] = useState(
+    initialState(minPrice, maxPrice, priceArray)
   );
-  const debouncedSearchTerm = useDebounce(actualPosition, 500);
 
-
-
+  const rangeComponent = useRef(null);
+  const debouncedSearchTerm = useDebounce(state.actualPosition, 500);
   let xDirection = "";
-
+ console.log(state.actualPosition)
   useEffect(() => {
+    console.log('DEBOUNCE')
     if (debouncedSearchTerm) {
-      changePrice(actualPosition)();
+      changePrice(state.actualPosition, state, setState)();
     }
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
-    setExtremesValues({
-      left: { min: minPrice, max: maxPrice },
-      right: { min: minPrice, max: maxPrice },
+    setState({
+      ...state,
+      extremesValues: {
+        left: { min: minPrice, max: maxPrice },
+        right: { min: minPrice, max: maxPrice },
+      },
+      actualPosition: { left: minPrice, right: maxPrice },
+      positionsArray: priceArray,
     });
-    setActualPosition({ ...actualPosition, left: minPrice, right: maxPrice });
-    fixedType && setPositionArray(priceArray);
   }, [minPrice, maxPrice, priceArray]);
 
   let mousedown = (e, selector) => {
-    setSelectedComponent(selector);
-    setMoveAllowed(true);
+    setState({ ...state, selectedComponent: selector, moveAllowed: true });
   };
 
   let mousemove = (e) => {
     getMouseDirection(e);
-    if (moveAllowed) {
+    if (state.moveAllowed) {
       moveSelector(e)();
     }
   };
@@ -80,10 +48,8 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     let barRangeWidth = rangeComponent.current.offsetWidth;
     let barLeftPosition = rangeComponent.current.offsetLeft;
     let getValue =
-      minPrice +
-      (maxPrice - minPrice) * (modifyStates("getXComponent")() / 100);
-
-    if (moveAllowed) {
+      minPrice + (maxPrice - minPrice) * (getSetStates("getXComponent") / 100);
+    if (state.moveAllowed) {
       return {
         left: () => {
           fixedType
@@ -112,138 +78,82 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }
   };
 
-  let canMoveTo = (direction) => {
-    if (direction === "right") {
-      if (selectedComponent.id === "selector-left") {
-        return actualPosition.left < actualPosition.right - 1;
-      }
-      return true;
-    } else if (direction === "left") {
-      if (selectedComponent.id === "selector-right") {
-        return actualPosition.right > actualPosition.left + 1;
-      }
-      return true;
-    }
-  };
+  // let canMoveTo = (direction) => {
+  //   if (direction === "right") {
+  //     if (state.selectedComponent.id === "selector-left") {
+  //       return state.actualPosition.left < state.actualPosition.right - 1;
+  //     }
+  //     return true;
+  //   } else if (direction === "left") {
+  //     if (state.selectedComponent.id === "selector-right") {
+  //       return state.actualPosition.right > state.actualPosition.left + 1;
+  //     }
+  //     return true;
+  //   }
+  // };
 
   let directionsLimits = (direction) => {
     return {
       right: () => ({
-        canMove: modifyStates("getXComponent")() < 100,
-        isLimit: modifyStates("getXComponent")() === 100,
+        canMove: getSetStates("getXComponent") < 100,
+        isLimit: getSetStates("getXComponent") >= 100,
       }),
       left: () => ({
-        canMove: modifyStates("getXComponent")() > 0,
-        isLimit: modifyStates("getXComponent")() === 0,
+        canMove: getSetStates("getXComponent") > 0,
+        isLimit: getSetStates("getXComponent") <= 0,
       }),
     }[direction];
   };
 
-  let moveToLeftFixed = (
-    e,
-    barRangeWidth,
-    barLeftPosition,
-    getValue,
-    direction
-  ) => {
-    if (!canMoveTo(direction)) return;
-    let newPosition = modifyStates("getArrayState")() - 1;
-    if (newPosition + 1 === 0) return;
-    let newValue = positionsArray[newPosition];
-    if (
-      modifyStates("getXComponent")() > 0 &&
-      getValue >= Math.round(newValue)
-    ) {
-      modifyStates("setXComponent")()(
-        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
-      );
-    } else {
-      changeActualPosition(positionsArray[newPosition]);
-      modifyStates("setArrayState")()(newPosition);
-    }
-  };
-
-  let moveToRightFixed = (
-    e,
-    barRangeWidth,
-    barLeftPosition,
-    getValue,
-    direction
-  ) => {
-    if (!canMoveTo(direction)) return;
-    let newPosition = modifyStates("getArrayState") + 1;
-    if (newPosition === priceArray.length) return;
-    let newValue = positionsArray[newPosition];
-    if (
-      modifyStates("getXComponent")() < 100 &&
-      getValue <= Math.round(newValue)
-    ) {
-      modifyStates("setXComponent")()(
-        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
-      );
-    } else {
-      changeActualPosition(positionsArray[newPosition]);
-      modifyStates("setArrayState")()(newPosition);
-    }
-  };
-
-  let moveTo = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
-    if (!canMoveTo(direction)) return;
-    if (directionsLimits(direction)().canMove) {
-      modifyStates("setXComponent")()(
-        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
-      );
-      changeActualPosition(Math.round(getValue));
-    } else if (directionsLimits(direction)().isLimit) {
-      if (selectedComponent?.id === "selector-right") {
-        changeActualPosition(Math.round(maxPrice));
-      } else {
-        changeActualPosition(Math.round(minPrice));
-      }
-    }
-  };
-
-  let modifyStates = (modifier) => {
+  let getSetStates = (modifier, newState, value) => {
     return {
-      setXComponent: () =>
-        selectedComponent?.id === "selector-right"
-          ? setXRightComponent
-          : setXLeftComponent,
-      getXComponent: () =>
-        selectedComponent?.id === "selector-right"
-          ? xRightComponent
-          : xLeftComponent,
-      setArrayState: () =>
-        selectedComponent?.id === "selector-right"
-          ? setArrayRightState
-          : setArrayLeftState,
-      getArrayState: () =>
-        selectedComponent?.id === "selector-right"
-          ? arrayRightState
-          : arrayLeftState,
+      setXComponent:
+        state.selectedComponent?.id === "selector-right"
+          ? () =>
+              setState({
+                ...state,
+                xRightComponent: newState,
+                actualPosition: {
+                  ...state.actualPosition,
+                  right: Math.round(value),
+                },
+              })
+          : () =>
+              setState({
+                ...state,
+                xLeftComponent: newState,
+                actualPosition: {
+                  ...state.actualPosition,
+                  left: Math.round(value),
+                },
+              }),
+      setArrayState:
+        state.selectedComponent?.id === "selector-right"
+          ? (newState) => setState({ ...state, arrayRightState: newState })
+          : (newState) => setState({ ...state, arrayLeftState: newState }),
+      getXComponent:
+        state.selectedComponent?.id === "selector-right"
+          ? state.xRightComponent
+          : state.xLeftComponent,
+      getArrayState:
+        state.selectedComponent?.id === "selector-right"
+          ? state.arrayRightState
+          : state.arrayLeftState,
     }[modifier];
   };
 
-  let changeActualPosition = (value) => {
-    selectedComponent.id === "selector-right"
-      ? setActualPosition({ ...actualPosition, right: value })
-      : setActualPosition({ ...actualPosition, left: value });
-  };
-
-  let getMouseDirection = (e) => {
-    if (e.pageX < oldXMousePosition) {
-      xDirection = "left";
-    } else if (e.pageX > oldXMousePosition) {
-      xDirection = "right";
+  let moveTo = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+    if (!canMoveTo(direction, state)) return;
+    if (directionsLimits(direction)().canMove) {
+      let newState = ((e.clientX - barLeftPosition) * 100) / barRangeWidth;
+      getSetStates("setXComponent", newState, getValue)();
+    } else if (directionsLimits(direction)().isLimit) {
+      if (state.selectedComponent?.id === "selector-right") {
+        getSetStates("setXComponent", 100, maxPrice)();
+      } else {
+        getSetStates("setXComponent", 0, minPrice)();
+      }
     }
-    setOldXMousePosition(e.pageX);
-  };
-
-  let mouseup = (e) => {
-    let newPosition = modifyStates("getArrayState")();
-    fixedType && changeActualPosition(positionsArray[newPosition]);
-    fixedType && modifyStates("setArrayState")()(newPosition);
-    setMoveAllowed(false);
   };
 
   let changePrice = (newValue) => {
@@ -251,22 +161,56 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     return {
       "selector-left": () => {
         if (left <= 0) {
-          setActualPosition({ ...actualPosition, left: minPrice });
+          setState({
+            ...state,
+            actualPosition: { ...state.actualPosition, left: minPrice },
+          });
         } else if (left >= right) {
-          setActualPosition({ ...actualPosition, left: right - 1 });
+          setState({
+            ...state,
+            actualPosition: { ...state.actualPosition, left: right - 1 },
+          });
         }
-        setXLeftComponent(((left - minPrice) * 100) / (maxPrice - minPrice));
+        setState({
+          ...state,
+          xLeftComponent: ((left - minPrice) * 100) / (maxPrice - minPrice),
+        });
       },
       "selector-right": () => {
         if (right >= 100) {
-          setActualPosition({ ...actualPosition, right: maxPrice });
+          setState({
+            ...state,
+            actualPosition: { ...state.actualPosition, right: maxPrice },
+          });
         } else if (right <= left) {
-          setActualPosition({ ...actualPosition, right: left + 1 });
+          setState({
+            ...state,
+            actualPosition: { ...state.actualPosition, right: left + 1 },
+          });
         }
-        setXRightComponent(((right - minPrice) * 100) / (maxPrice - minPrice));
+        setState({
+          ...state,
+          xRightComponent: ((right - minPrice) * 100) / (maxPrice - minPrice),
+        });
       },
       undefined: () => {},
-    }[selectedComponent.id];
+    }[state.selectedComponent.id];
+  };
+
+  let getMouseDirection = (e) => {
+    if (e.pageX < state.oldXMousePosition) {
+      xDirection = "left";
+    } else if (e.pageX > state.oldXMousePosition) {
+      xDirection = "right";
+    }
+    setState({ ...state, oldXMousePosition: e.pageX });
+  };
+
+  let mouseup = (e) => {
+    let newPosition = getSetStates("getArrayState");
+    fixedType && changeActualPosition(positionsArray[newPosition]);
+    fixedType && getSetStates("setArrayState")(newPosition);
+    setState({ ...state, moveAllowed: false });
   };
 
   return (
@@ -277,25 +221,27 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     >
       <div ref={rangeComponent} className="range--component">
         <SelectorRange
-          position={xLeftComponent}
+          position={state.xLeftComponent}
           type={"left"}
-          minValue={extremesValues.left.min}
-          maxValue={extremesValues.left.max}
+          minValue={state.extremesValues.left.min}
+          maxValue={state.extremesValues.left.max}
           mouseDown={mousedown}
           fixedType={fixedType}
-          setActualPosition={setActualPosition}
-          actualPosition={actualPosition}
+          setState={setState}
+          state={state}
+          actualPosition={state.actualPosition}
         />
         <BarRange />
         <SelectorRange
-          position={xRightComponent}
+          position={state.xRightComponent}
           type={"right"}
-          minValue={extremesValues.right.min}
-          maxValue={extremesValues.right.max}
+          minValue={state.extremesValues.right.min}
+          maxValue={state.extremesValues.right.max}
           mouseDown={mousedown}
           fixedType={fixedType}
-          setActualPosition={setActualPosition}
-          actualPosition={actualPosition}
+          setState={setState}
+          state={state}
+          actualPosition={state.actualPosition}
         />
       </div>
     </div>

@@ -8,22 +8,22 @@ const SelectorRange = ({
   minValue,
   mouseDown,
   fixedType,
-  setActualPosition,
+  setState,
+  state,
   actualPosition,
 }) => {
   const selector = useRef(null);
   const canChangePosition = (e) => {
     if (e.target.value === "") {
-      setActualPosition({ ...actualPosition, [type]: 0 });
+      console.log(1)
+      setState({...state, actualPosition: {...state.actualPosition,[type]: 0}});
       return;
     }
     if (parseInt(e.target.value) < 0 || parseInt(e.target.value) > 100) {
-      setActualPosition({ ...actualPosition, [type]: actualPosition[type] });
+      console.log(2)
+      setState({...state, actualPosition: {...state.actualPosition,[type]: actualPosition[type]}});
     } else {
-      setActualPosition({
-        ...actualPosition,
-        [type]: parseInt(e.target.value),
-      });
+      setState({...state, actualPosition: {...state.actualPosition,[type]: parseInt(e.target.value)}});
     }
   };
   return (
