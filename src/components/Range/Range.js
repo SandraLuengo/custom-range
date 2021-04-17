@@ -62,18 +62,20 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   let moveSelector = (e) => {
     let barRangeWidth = rangeComponent.current.offsetWidth;
     let barLeftPosition = rangeComponent.current.offsetLeft;
-    let getValue = minPrice + (maxPrice - minPrice) * (getXComponent() / 100);
+    let getValue =
+      minPrice +
+      (maxPrice - minPrice) * (modifyStates("getXComponent")() / 100);
 
     if (moveAllowed) {
       return {
         left: () => {
           fixedType
-            ? moveToLeftFixed(e, barRangeWidth, barLeftPosition, getValue)
+            ? moveToLeftFixed(e, barRangeWidth, barLeftPosition, getValue, "left")
             : moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
         },
         right: () => {
           fixedType
-            ? moveToRightFixed(e, barRangeWidth, barLeftPosition, getValue)
+            ? moveToRightFixed(e, barRangeWidth, barLeftPosition, getValue, "right")
             : moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
         },
         "": () => {},
@@ -95,46 +97,6 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }
   };
 
-  let canMoveToLeft = () => {
-    if (selectedComponent.id === "selector-right") {
-      return actualPosition.right > actualPosition.left + 1;
-    }
-    return true;
-  };
-
-  let canMoveToRight = () => {
-    if (selectedComponent.id === "selector-left") {
-      return actualPosition.left < actualPosition.right - 1;
-    }
-    return true;
-  };
-
-  let moveToLeftFixed = (e, barRangeWidth, barLeftPosition, getValue) => {
-    if (!canMoveToLeft()) return;
-    let newPosition = getArrayState() - 1;
-    if (newPosition + 1 === 0) return;
-    let newValue = positionsArray[newPosition];
-    if (getXComponent() > 0 && getValue >= Math.round(newValue)) {
-      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
-    } else {
-      changeActualPosition(positionsArray[newPosition]);
-      setArrayState()(newPosition);
-    }
-  };
-
-  let moveToRightFixed = (e, barRangeWidth, barLeftPosition, getValue) => {
-    if (!canMoveToRight()) return;
-    let newPosition = getArrayState() + 1;
-    if (newPosition === priceArray.length) return;
-    let newValue = positionsArray[newPosition];
-    if (getXComponent() < 100 && getValue <= Math.round(newValue)) {
-      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
-    } else {
-      changeActualPosition(positionsArray[newPosition]);
-      setArrayState()(newPosition);
-    }
-  };
-
   let directionsLimits = (direction) => {
     return {
       right: () => ({
@@ -148,6 +110,42 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }[direction];
   };
 
+  let moveToLeftFixed = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+    if (!canMoveTo(direction)) return;
+    let newPosition = modifyStates("getArrayState")() - 1;
+    if (newPosition + 1 === 0) return;
+    let newValue = positionsArray[newPosition];
+    if (
+      modifyStates("getXComponent")() > 0 &&
+      getValue >= Math.round(newValue)
+    ) {
+      modifyStates("setXComponent")()(
+        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
+      );
+    } else {
+      changeActualPosition(positionsArray[newPosition]);
+      modifyStates("setArrayState")()(newPosition);
+    }
+  };
+
+  let moveToRightFixed = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+    if (!canMoveTo(direction)) return;
+    let newPosition = modifyStates("getArrayState") + 1;
+    if (newPosition === priceArray.length) return;
+    let newValue = positionsArray[newPosition];
+    if (
+      modifyStates("getXComponent")() < 100 &&
+      getValue <= Math.round(newValue)
+    ) {
+      modifyStates("setXComponent")()(
+        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
+      );
+    } else {
+      changeActualPosition(positionsArray[newPosition]);
+      modifyStates("setArrayState")()(newPosition);
+    }
+  };
+
   let moveTo = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
     if (!canMoveTo(direction)) return;
     if (directionsLimits(direction)().canMove) {
@@ -156,33 +154,11 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
       );
       changeActualPosition(Math.round(getValue));
     } else if (directionsLimits(direction)().isLimit) {
-      changeActualPosition(Math.round(minPrice));
-    }
-  };
-
-  let moveToLeft = (e, barRangeWidth, barLeftPosition, getValue) => {
-    if (!canMoveToLeft()) return;
-    if (modifyStates("getXComponent")() > 0) {
-      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
-      changeActualPosition(Math.round(getValue));
-    } else if (getXComponent() === 0) {
       if (selectedComponent?.id === "selector-right") {
         changeActualPosition(Math.round(maxPrice));
       } else {
         changeActualPosition(Math.round(minPrice));
       }
-    }
-  };
-
-  let moveToRight = (e, barRangeWidth, barLeftPosition, getValue) => {
-    if (!canMoveToRight()) return;
-    if (modifyStates("getXComponent")() < 100) {
-      modifyStates("setXComponent")()(
-        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
-      );
-      changeActualPosition(Math.round(getValue));
-    } else if (modifyStates("getXComponent")() === 100) {
-      changeActualPosition(maxPrice);
     }
   };
 
@@ -207,30 +183,6 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }[modifier];
   };
 
-  let setXComponent = () => {
-    return selectedComponent?.id === "selector-right"
-      ? setXRightComponent
-      : setXLeftComponent;
-  };
-
-  let getXComponent = () => {
-    return selectedComponent?.id === "selector-right"
-      ? xRightComponent
-      : xLeftComponent;
-  };
-
-  let setArrayState = () => {
-    return selectedComponent?.id === "selector-right"
-      ? setArrayRightState
-      : setArrayLeftState;
-  };
-
-  let getArrayState = () => {
-    return selectedComponent?.id === "selector-right"
-      ? arrayRightState
-      : arrayLeftState;
-  };
-
   let changeActualPosition = (value) => {
     selectedComponent.id === "selector-right"
       ? setActualPosition({ ...actualPosition, right: value })
@@ -247,9 +199,9 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   };
 
   let mouseup = (e) => {
-    let newPosition = getArrayState();
+    let newPosition = modifyStates("getArrayState")();
     fixedType && changeActualPosition(positionsArray[newPosition]);
-    fixedType && setArrayState()(newPosition);
+    fixedType && modifyStates("setArrayState")()(newPosition);
     setMoveAllowed(false);
   };
 
