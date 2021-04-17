@@ -3,6 +3,20 @@ import { SelectorRange, BarRange } from "../../components";
 import useDebounce from "../../hooks/useDebounce.js";
 import "./range.scss";
 
+const initialState = () => ({
+  selectedComponent: '',
+  oldXMousePosition: '',
+  xLeftComponent: '', 
+  xRightComponent: '',
+  extremesValues: '',
+  moveAllowed: '',
+  rangeComponent: '',
+  actualPosition: '',
+  positionsArray:'',
+  arrayLeftState: '',
+  arrayRightState: '',
+});
+
 const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   const [selectedComponent, setSelectedComponent] = useState("selector-right");
   const [oldXMousePosition, setOldXMousePosition] = useState(0);
@@ -30,6 +44,9 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     priceArray?.length - 1
   );
   const debouncedSearchTerm = useDebounce(actualPosition, 500);
+
+
+
   let xDirection = "";
 
   useEffect(() => {
@@ -70,12 +87,24 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
       return {
         left: () => {
           fixedType
-            ? moveToLeftFixed(e, barRangeWidth, barLeftPosition, getValue, "left")
+            ? moveToLeftFixed(
+                e,
+                barRangeWidth,
+                barLeftPosition,
+                getValue,
+                "left"
+              )
             : moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
         },
         right: () => {
           fixedType
-            ? moveToRightFixed(e, barRangeWidth, barLeftPosition, getValue, "right")
+            ? moveToRightFixed(
+                e,
+                barRangeWidth,
+                barLeftPosition,
+                getValue,
+                "right"
+              )
             : moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
         },
         "": () => {},
@@ -85,13 +114,13 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
 
   let canMoveTo = (direction) => {
     if (direction === "right") {
-      if (selectedComponent.id === "selector-right") {
-        return actualPosition.right > actualPosition.left + 1;
-      }
-      return true;
-    } else {
       if (selectedComponent.id === "selector-left") {
         return actualPosition.left < actualPosition.right - 1;
+      }
+      return true;
+    } else if (direction === "left") {
+      if (selectedComponent.id === "selector-right") {
+        return actualPosition.right > actualPosition.left + 1;
       }
       return true;
     }
@@ -110,7 +139,13 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }[direction];
   };
 
-  let moveToLeftFixed = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+  let moveToLeftFixed = (
+    e,
+    barRangeWidth,
+    barLeftPosition,
+    getValue,
+    direction
+  ) => {
     if (!canMoveTo(direction)) return;
     let newPosition = modifyStates("getArrayState")() - 1;
     if (newPosition + 1 === 0) return;
@@ -128,7 +163,13 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }
   };
 
-  let moveToRightFixed = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+  let moveToRightFixed = (
+    e,
+    barRangeWidth,
+    barLeftPosition,
+    getValue,
+    direction
+  ) => {
     if (!canMoveTo(direction)) return;
     let newPosition = modifyStates("getArrayState") + 1;
     if (newPosition === priceArray.length) return;

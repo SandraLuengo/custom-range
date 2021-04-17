@@ -9,9 +9,23 @@ const SelectorRange = ({
   mouseDown,
   fixedType,
   setActualPosition,
-  actualPosition
+  actualPosition,
 }) => {
   const selector = useRef(null);
+  const canChangePosition = (e) => {
+    if (e.target.value === "") {
+      setActualPosition({ ...actualPosition, [type]: 0 });
+      return;
+    }
+    if (parseInt(e.target.value) < 0 || parseInt(e.target.value) > 100) {
+      setActualPosition({ ...actualPosition, [type]: actualPosition[type] });
+    } else {
+      setActualPosition({
+        ...actualPosition,
+        [type]: parseInt(e.target.value),
+      });
+    }
+  };
   return (
     <div className="selector">
       <div
@@ -19,22 +33,28 @@ const SelectorRange = ({
         style={{ left: `${position}%` }}
         max-value={maxValue}
         min-value={minValue}
-        actual-value={type==='left' ? actualPosition.left : actualPosition.right}
+        actual-value={
+          type === "left" ? actualPosition.left : actualPosition.right
+        }
         ref={selector}
         className={`selector--range selector--range--${type}`}
         id={`selector-${type}`}
       ></div>
       {fixedType ? (
         <label className="selector--value" style={{ left: `${position}%` }}>
-          {type==='left' ? actualPosition.left : actualPosition.right}
+          {type === "left" ? actualPosition.left : actualPosition.right}
         </label>
       ) : (
         <input
-          onChange={(e) => setActualPosition({ ...actualPosition, [type]: parseInt(e.target.value) || 0})}
+          onChange={(e) => canChangePosition(e)}
           onMouseDown={(e) => mouseDown(e, selector.current)}
           id={`input-${type}`}
           className="selector--value"
-          value={type==='left' ? actualPosition.left || "" : actualPosition.right || "" }
+          value={
+            type === "left"
+              ? actualPosition.left || ""
+              : actualPosition.right || ""
+          }
           style={{ left: `${position}%` }}
         />
       )}
