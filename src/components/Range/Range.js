@@ -33,7 +33,9 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
   let xDirection = "";
 
   useEffect(() => {
-    debouncedSearchTerm && changePrice(actualPosition);
+    if (debouncedSearchTerm) {
+      changePrice(actualPosition)();
+    }
   }, [debouncedSearchTerm]);
 
   useEffect(() => {
@@ -52,28 +54,44 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
 
   let mousemove = (e) => {
     getMouseDirection(e);
-    moveSelector(e);
+    if (moveAllowed) {
+      moveSelector(e)();
+    }
   };
 
   let moveSelector = (e) => {
     let barRangeWidth = rangeComponent.current.offsetWidth;
     let barLeftPosition = rangeComponent.current.offsetLeft;
     let getValue = minPrice + (maxPrice - minPrice) * (getXComponent() / 100);
+
     if (moveAllowed) {
-      switch (xDirection) {
-        case "left":
+      return {
+        left: () => {
           fixedType
             ? moveToLeftFixed(e, barRangeWidth, barLeftPosition, getValue)
-            : moveToLeft(e, barRangeWidth, barLeftPosition, getValue);
-          return;
-        case "right":
+            : moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
+        },
+        right: () => {
           fixedType
             ? moveToRightFixed(e, barRangeWidth, barLeftPosition, getValue)
-            : moveToRight(e, barRangeWidth, barLeftPosition, getValue);
-          return;
-        default:
-          return;
+            : moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
+        },
+        "": () => {},
+      }[xDirection];
+    }
+  };
+
+  let canMoveTo = (direction) => {
+    if (direction === "right") {
+      if (selectedComponent.id === "selector-right") {
+        return actualPosition.right > actualPosition.left + 1;
       }
+      return true;
+    } else {
+      if (selectedComponent.id === "selector-left") {
+        return actualPosition.left < actualPosition.right - 1;
+      }
+      return true;
     }
   };
 
@@ -117,24 +135,76 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
     }
   };
 
+  let directionsLimits = (direction) => {
+    return {
+      right: () => ({
+        canMove: modifyStates("getXComponent")() < 100,
+        isLimit: modifyStates("getXComponent")() === 100,
+      }),
+      left: () => ({
+        canMove: modifyStates("getXComponent")() > 0,
+        isLimit: modifyStates("getXComponent")() === 0,
+      }),
+    }[direction];
+  };
+
+  let moveTo = (e, barRangeWidth, barLeftPosition, getValue, direction) => {
+    if (!canMoveTo(direction)) return;
+    if (directionsLimits(direction)().canMove) {
+      modifyStates("setXComponent")()(
+        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
+      );
+      changeActualPosition(Math.round(getValue));
+    } else if (directionsLimits(direction)().isLimit) {
+      changeActualPosition(Math.round(minPrice));
+    }
+  };
+
   let moveToLeft = (e, barRangeWidth, barLeftPosition, getValue) => {
     if (!canMoveToLeft()) return;
-    if (getXComponent() > 0) {
+    if (modifyStates("getXComponent")() > 0) {
       setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
       changeActualPosition(Math.round(getValue));
     } else if (getXComponent() === 0) {
-      changeActualPosition(Math.round(minPrice));
+      if (selectedComponent?.id === "selector-right") {
+        changeActualPosition(Math.round(maxPrice));
+      } else {
+        changeActualPosition(Math.round(minPrice));
+      }
     }
   };
 
   let moveToRight = (e, barRangeWidth, barLeftPosition, getValue) => {
     if (!canMoveToRight()) return;
-    if (getXComponent() < 100) {
-      setXComponent()(((e.clientX - barLeftPosition) * 100) / barRangeWidth);
+    if (modifyStates("getXComponent")() < 100) {
+      modifyStates("setXComponent")()(
+        ((e.clientX - barLeftPosition) * 100) / barRangeWidth
+      );
       changeActualPosition(Math.round(getValue));
-    } else if (getXComponent() === 100) {
+    } else if (modifyStates("getXComponent")() === 100) {
       changeActualPosition(maxPrice);
     }
+  };
+
+  let modifyStates = (modifier) => {
+    return {
+      setXComponent: () =>
+        selectedComponent?.id === "selector-right"
+          ? setXRightComponent
+          : setXLeftComponent,
+      getXComponent: () =>
+        selectedComponent?.id === "selector-right"
+          ? xRightComponent
+          : xLeftComponent,
+      setArrayState: () =>
+        selectedComponent?.id === "selector-right"
+          ? setArrayRightState
+          : setArrayLeftState,
+      getArrayState: () =>
+        selectedComponent?.id === "selector-right"
+          ? arrayRightState
+          : arrayLeftState,
+    }[modifier];
   };
 
   let setXComponent = () => {
@@ -160,6 +230,7 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
       ? arrayRightState
       : arrayLeftState;
   };
+
   let changeActualPosition = (value) => {
     selectedComponent.id === "selector-right"
       ? setActualPosition({ ...actualPosition, right: value })
@@ -184,24 +255,25 @@ const Range = ({ minPrice, maxPrice, fixedType, priceArray }) => {
 
   let changePrice = (newValue) => {
     const { left, right } = newValue;
-    switch (selectedComponent.id) {
-      case "selector-left":
+    return {
+      "selector-left": () => {
         if (left <= 0) {
           setActualPosition({ ...actualPosition, left: minPrice });
         } else if (left >= right) {
           setActualPosition({ ...actualPosition, left: right - 1 });
         }
         setXLeftComponent(((left - minPrice) * 100) / (maxPrice - minPrice));
-        return;
-      case "selector-right":
+      },
+      "selector-right": () => {
         if (right >= 100) {
           setActualPosition({ ...actualPosition, right: maxPrice });
         } else if (right <= left) {
           setActualPosition({ ...actualPosition, right: left + 1 });
         }
         setXRightComponent(((right - minPrice) * 100) / (maxPrice - minPrice));
-        return;
-    }
+      },
+      undefined: () => {},
+    }[selectedComponent.id];
   };
 
   return (
