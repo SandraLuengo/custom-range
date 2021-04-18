@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import changePosition from "../../utils/selectorFunctions.js";
 import "./selectorRange.scss";
 
 const SelectorRange = ({
@@ -11,6 +10,7 @@ const SelectorRange = ({
   setState,
   state,
   actualPosition,
+  changePosition
 }) => {
   const selector = useRef(null);
   return (
@@ -21,21 +21,22 @@ const SelectorRange = ({
         max-value={maxValue}
         min-value={minValue}
         actual-value={
-          type === "left" ? actualPosition.left : actualPosition.right
+          type === "left" ? actualPosition?.left : actualPosition?.right
         }
         ref={selector}
         className={`selector--range selector--range--${type}`}
         id={`selector-${type}`}
       ></div>
       <input
-        onChange={(e) => changePosition(e, setState, state, type)}
+        aria-label={`cost-input-${type}`}
+        onChange={(e) => changePosition(e, setState, state, type, maxValue, minValue)}
         onMouseDown={(e) => mouseDown(e, selector.current)}
         id={`input-${type}`}
         className="selector--value"
         value={
           type === "left"
-            ? actualPosition.left || ""
-            : actualPosition.right || ""
+            ? actualPosition?.left || ""
+            : actualPosition?.right || ""
         }
         style={{ left: `${position}%` }}
       />

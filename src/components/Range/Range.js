@@ -7,6 +7,7 @@ import {
   directionsLimits,
   changePrice,
   getMouseDirection,
+  changePosition
 } from "../../utils/rangeFunctions.js";
 import useDebounce from "../../hooks/useDebounce.js";
 import "./range.scss";
@@ -112,6 +113,7 @@ const Range = ({ minPrice, maxPrice }) => {
 
   return (
     <div
+      data-testid='range'
       className="range"
       onMouseMove={(e) => mousemove(e)}
       onMouseUp={(e) => mouseup(e)}
@@ -125,6 +127,7 @@ const Range = ({ minPrice, maxPrice }) => {
           mouseDown={mousedown}
           setState={setState}
           state={state}
+          changePosition={changePosition}
           actualPosition={state.actualPosition}
         />
         <BarRange />
@@ -136,6 +139,7 @@ const Range = ({ minPrice, maxPrice }) => {
           mouseDown={mousedown}
           setState={setState}
           state={state}
+          changePosition={changePosition}
           actualPosition={state.actualPosition}
         />
       </div>

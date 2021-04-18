@@ -11,7 +11,7 @@ const Exercise2 = () => {
     <div className="exercises">
       {error && <Redirect to="/error"/>}
       <h1>Fixed values range</h1>
-      <p>Refactor in progress 🛠️🔧</p>
+      <p>Working in progress... 🛠️🔧</p>
       {/* {data ?  <Range
         minPrice={data.min}
         maxPrice={data.max}

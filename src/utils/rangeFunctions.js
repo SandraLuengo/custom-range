@@ -97,10 +97,28 @@ let getMouseDirection = (e, state, setState, setXDirection) => {
   setState({ ...state, oldXMousePosition: e.pageX });
 };
 
+const changePosition = (e, setState, state, type, maxPrice, minPrice) => {
+  let newValue = parseInt(e.target.value);
+  console.log(newValue)
+  if (e.target.value === "") {
+    newValue = 0;
+  } else if (parseInt(e.target.value) < minPrice || parseInt(e.target.value) > maxPrice) {
+    newValue = state.actualPosition[type];
+  }
+  // setState({
+  //   ...state,
+  //   actualPosition: {
+  //     ...state.actualPosition,
+  //     [type]: newValue,
+  //   },
+  // });
+};
+
 export {
   canMoveTo,
   moveSelector,
   directionsLimits,
   changePrice,
-  getMouseDirection
+  getMouseDirection,
+  changePosition
 };

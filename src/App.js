@@ -14,7 +14,7 @@ const App = () => {
       </div>
       <div>
         <button className="btn">
-          <Link to={"/exercise2"}>Fixed values range</Link>
+          <Link to={"/exercise2"}>Fixed values range 🛠️</Link>
         </button>
       </div>
     </div>
