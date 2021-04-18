@@ -7,7 +7,6 @@ import "./exercises.scss";
 const Exercise2 = () => {
 
   const { data, error } = useApi("http://demo0922089.mockable.io/exercise2");
-   
   return (
     <div className="exercises">
       {error && <Redirect to="/error"/>}

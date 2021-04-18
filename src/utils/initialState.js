@@ -1,4 +1,5 @@
 const initialState = (minPrice, maxPrice, priceArray) => ({
+ 
   selectedComponent: "selector-right",
   oldXMousePosition: 0,
   xLeftComponent: 0,

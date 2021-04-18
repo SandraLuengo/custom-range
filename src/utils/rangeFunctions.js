@@ -12,47 +12,106 @@ let canMoveTo = (direction, state) => {
   }
 };
 
-let changePrice = (newValue, state, setState) => {
+let moveSelector = (
+  e,
+  rangeComponent,
+  state,
+  getState,
+  fixedType,
+  moveTo,
+  moveToFixed,
+  xDirection,
+  minPrice,
+  maxPrice
+) => {
+  let barRangeWidth = rangeComponent.current.offsetWidth;
+  let barLeftPosition = rangeComponent.current.offsetLeft;
+  let getValue =
+    minPrice + (maxPrice - minPrice) * (getState("getXComponent") / 100);
+  if (state.moveAllowed) {
+    return {
+      left: () => {
+        fixedType
+          ? moveToFixed(e, barRangeWidth, barLeftPosition, getValue, "left")
+          : moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
+      },
+      right: () => {
+        fixedType
+          ? moveToFixed(e, barRangeWidth, barLeftPosition, getValue, "right")
+          : moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
+      },
+      "": () => {},
+    }[xDirection];
+  }
+};
+
+let directionsLimits = (direction, getState) => {
+  return {
+    right: () => ({
+      canMove: getState("getXComponent") < 100,
+      isLimit: getState("getXComponent") >= 100,
+    }),
+    left: () => ({
+      canMove: getState("getXComponent") > 0,
+      isLimit: getState("getXComponent") <= 0,
+    }),
+  }[direction];
+};
+
+let directionsFixedLimits = (direction, getValue, newValue, newPosition, priceArray, getState) => {
+  return {
+    right: () => ({
+      canMove:
+        getState?.("getXComponent") < 100 && getValue <= Math.round(newValue),
+      isLimit: newPosition + 1 === 0,
+    }),
+    left: () => ({
+      canMove:
+        getState?.("getXComponent") > 0 && getValue >= Math.round(newValue),
+      isLimit: newPosition === priceArray?.length,
+    }),
+  }[direction];
+};
+
+let changePrice = (newValue, setState, state, minPrice, maxPrice) => {
   const { left, right } = newValue;
   return {
     "selector-left": () => {
+      let newPosition = left;
       if (left <= 0) {
-        setState({
-          ...state,
-          actualPosition: { ...state.actualPosition, left: state.minPrice },
-        });
+        newPosition = minPrice;
       } else if (left >= right) {
-        setState({
-          ...state,
-          actualPosition: { ...state.actualPosition, left: right - 1 },
-        });
+        newPosition = right - 1;
       }
       setState({
         ...state,
+        actualPosition: { ...state.actualPosition, left: newPosition },
         xLeftComponent:
-          ((left - state.minPrice) * 100) / (state.maxPrice - state.minPrice),
+          ((newPosition - minPrice) * 100) / (maxPrice - minPrice),
       });
     },
     "selector-right": () => {
+      let newPosition = right;
       if (right >= 100) {
-        setState({
-          ...state,
-          actualPosition: { ...state.actualPosition, right: state.maxPrice },
-        });
+        newPosition = maxPrice;
       } else if (right <= left) {
-        setState({
-          ...state,
-          actualPosition: { ...state.actualPosition, right: left + 1 },
-        });
+        newPosition = left + 1;
       }
       setState({
         ...state,
+        actualPosition: { ...state.actualPosition, right: newPosition },
         xRightComponent:
-          ((right - state.minPrice) * 100) / (state.maxPrice - state.minPrice),
+          ((newPosition - minPrice) * 100) / (maxPrice - minPrice),
       });
     },
     undefined: () => {},
   }[state.selectedComponent.id];
 };
 
-export { canMoveTo, changePrice };
+export {
+  canMoveTo,
+  moveSelector,
+  directionsLimits,
+  changePrice,
+  directionsFixedLimits,
+};
