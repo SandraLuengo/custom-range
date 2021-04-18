@@ -11,12 +11,13 @@ const Exercise2 = () => {
     <div className="exercises">
       {error && <Redirect to="/error"/>}
       <h1>Fixed values range</h1>
-      {data ?  <Range
+      <p>Refactor in progress 🛠️🔧</p>
+      {/* {data ?  <Range
         minPrice={data.min}
         maxPrice={data.max}
         priceArray={data.prices}
         fixedType={true}
-      /> : <Loading/> }
+      /> : <Loading/> } */}
       <button className="exercises--btn">
         <Link to={"/"}>Menu</Link>
       </button>

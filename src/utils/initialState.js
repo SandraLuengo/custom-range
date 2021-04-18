@@ -1,4 +1,4 @@
-const initialState = (minPrice, maxPrice, priceArray) => ({
+const initialState = (minPrice, maxPrice) => ({
  
   selectedComponent: "selector-right",
   oldXMousePosition: 0,
@@ -18,10 +18,7 @@ const initialState = (minPrice, maxPrice, priceArray) => ({
   actualPosition: {
     left: minPrice,
     right: maxPrice,
-  },
-  positionsArray: priceArray,
-  arrayLeftState: 0,
-  arrayRightState: priceArray?.length - 1,
+  }
 });
 
 

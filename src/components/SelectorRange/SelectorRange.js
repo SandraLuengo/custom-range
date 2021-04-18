@@ -8,7 +8,6 @@ const SelectorRange = ({
   maxValue,
   minValue,
   mouseDown,
-  fixedType,
   setState,
   state,
   actualPosition,
@@ -28,24 +27,18 @@ const SelectorRange = ({
         className={`selector--range selector--range--${type}`}
         id={`selector-${type}`}
       ></div>
-      {fixedType ? (
-        <label className="selector--value" style={{ left: `${position}%` }}>
-          {type === "left" ? actualPosition.left : actualPosition.right}
-        </label>
-      ) : (
-        <input
-          onChange={(e) => changePosition(e, setState, state, type)}
-          onMouseDown={(e) => mouseDown(e, selector.current)}
-          id={`input-${type}`}
-          className="selector--value"
-          value={
-            type === "left"
-              ? actualPosition.left || ""
-              : actualPosition.right || ""
-          }
-          style={{ left: `${position}%` }}
-        />
-      )}
+      <input
+        onChange={(e) => changePosition(e, setState, state, type)}
+        onMouseDown={(e) => mouseDown(e, selector.current)}
+        id={`input-${type}`}
+        className="selector--value"
+        value={
+          type === "left"
+            ? actualPosition.left || ""
+            : actualPosition.right || ""
+        }
+        style={{ left: `${position}%` }}
+      />
     </div>
   );
 };

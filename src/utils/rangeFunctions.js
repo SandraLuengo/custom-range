@@ -17,9 +17,7 @@ let moveSelector = (
   rangeComponent,
   state,
   getState,
-  fixedType,
   moveTo,
-  moveToFixed,
   xDirection,
   minPrice,
   maxPrice
@@ -31,14 +29,10 @@ let moveSelector = (
   if (state.moveAllowed) {
     return {
       left: () => {
-        fixedType
-          ? moveToFixed(e, barRangeWidth, barLeftPosition, getValue, "left")
-          : moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
+        moveTo(e, barRangeWidth, barLeftPosition, getValue, "left");
       },
       right: () => {
-        fixedType
-          ? moveToFixed(e, barRangeWidth, barLeftPosition, getValue, "right")
-          : moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
+        moveTo(e, barRangeWidth, barLeftPosition, getValue, "right");
       },
       "": () => {},
     }[xDirection];
@@ -54,21 +48,6 @@ let directionsLimits = (direction, getState) => {
     left: () => ({
       canMove: getState("getXComponent") > 0,
       isLimit: getState("getXComponent") <= 0,
-    }),
-  }[direction];
-};
-
-let directionsFixedLimits = (direction, getValue, newValue, newPosition, priceArray, getState) => {
-  return {
-    right: () => ({
-      canMove:
-        getState?.("getXComponent") < 100 && getValue <= Math.round(newValue),
-      isLimit: newPosition + 1 === 0,
-    }),
-    left: () => ({
-      canMove:
-        getState?.("getXComponent") > 0 && getValue >= Math.round(newValue),
-      isLimit: newPosition === priceArray?.length,
     }),
   }[direction];
 };
@@ -108,10 +87,20 @@ let changePrice = (newValue, setState, state, minPrice, maxPrice) => {
   }[state.selectedComponent.id];
 };
 
+
+let getMouseDirection = (e, state, setState, setXDirection) => {
+  if (e.pageX < state.oldXMousePosition) {
+    setXDirection("left")
+  } else if (e.pageX > state.oldXMousePosition) {
+    setXDirection("right")
+  }
+  setState({ ...state, oldXMousePosition: e.pageX });
+};
+
 export {
   canMoveTo,
   moveSelector,
   directionsLimits,
   changePrice,
-  directionsFixedLimits,
+  getMouseDirection
 };
