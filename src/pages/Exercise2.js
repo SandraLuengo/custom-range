@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Range, Loading } from "../components";
-import useApi from "../hooks/useApi.js"
+import useApi from "../hooks/useApi.js";
 import "./exercises.scss";
 
 const Exercise2 = () => {
-
   const { data, error } = useApi("http://demo0922089.mockable.io/exercise2");
   return (
     <div className="exercises">
-      {error && <Redirect to="/error"/>}
+      {error && <Redirect to="/error" />}
       <h1>Fixed values range</h1>
       <p>Working in progress... 🛠️🔧</p>
       {/* {data ?  <Range
@@ -18,9 +17,10 @@ const Exercise2 = () => {
         priceArray={data.prices}
         fixedType={true}
       /> : <Loading/> } */}
-      <button className="exercises--btn">
-        <Link to={"/"}>Menu</Link>
-      </button>
+
+      <Link className="exercises--btn" to={"/"}>
+        Menu
+      </Link>
     </div>
   );
 };

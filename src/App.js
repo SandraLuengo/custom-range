@@ -6,11 +6,11 @@ import "./main.scss";
 const App = () => {
   return (
     <div className="home">
-      <h1>Range Component</h1>
-      <div data-testid='app'>
-        <button className="btn">
+      <div className="home--content">
+        <h1>Range Component</h1>
+        <div data-testid="app">
           <Link to={"/exercise1"}>Normal Range</Link>
-        </button>
+        </div>
       </div>
       {/* <div>
         <button className="btn">
