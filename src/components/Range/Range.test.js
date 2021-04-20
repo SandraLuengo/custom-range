@@ -55,6 +55,12 @@ describe("Range Functionality", () => {
     expect(inputRight.value).toBe("23");
   });
 
+  /*
+  
+  Cuando cambio los valores de inputRight e inputLeft, pasa medio segundo hasta que se aplica, porque lo tengo montado con un debounce
+  entonces necesito esperar un momento antes de comprobar los valores de nuevo
+  
+  */
   
   // it("left selector can´t be bigger than right selector", async () => {
   //   const { inputLeft, inputRight } = setup();
