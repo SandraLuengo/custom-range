@@ -1,31 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Range } from "../components";
+import React from "react";
+import { Link, Redirect } from "react-router-dom";
+import { Range, Loading } from "../components";
+import useApi from "../hooks/useApi.js"
 import "./exercises.scss";
 
 const Exercise1 = () => {
 
-  const [priceData, setPriceData] = useState({ min: 1, max: 1 });
-
-  const fetchData = async () => {
-    const apiCall = await fetch("http://demo0922089.mockable.io/exercise1");
-    const prices = await apiCall.json();
-    setPriceData(prices.price);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data, error } = useApi("http://demo0922089.mockable.io/exercise1");
  
   return (
     <div className="exercises">
+      {error && <Redirect to="/error"/>}
       <h1>Normal Range</h1>
-      <Range
-        minPrice={priceData.min}
-        maxPrice={priceData.max}
+      {data.price ?  <Range
+        minPrice={data.price.min}
+        maxPrice={data.price.max}
         fixedType={false}
-      />
-      <button className="exercises--btn">
+      /> : <Loading/>} 
+      <button   aria-label='button-menu' className="exercises--btn">
         <Link to={"/"}>Menu</Link>
       </button>
     </div>

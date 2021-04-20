@@ -1,32 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Range } from "../components";
+import { Range, Loading } from "../components";
+import useApi from "../hooks/useApi.js"
+import "./exercises.scss";
 
 const Exercise2 = () => {
-  const [priceData, setPriceData] = useState({
-    min: 1,
-    max: 70.99,
-    prices: [1.99, 5.99, 10.99, 30.99, 50.99, 70.99],
-  });
 
-  const fetchData = async () => {
-    const apiCall = await fetch("http://demo0922089.mockable.io/exercise2");
-    const prices = await apiCall.json();
-    setPriceData(prices);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const { data, error } = useApi("http://demo0922089.mockable.io/exercise2");
   return (
     <div className="exercises">
+      {error && <Redirect to="/error"/>}
       <h1>Fixed values range</h1>
-      <Range
-        minPrice={priceData.min}
-        maxPrice={priceData.max}
-        priceArray={priceData.prices}
+      <p>Working in progress... 🛠️🔧</p>
+      {/* {data ?  <Range
+        minPrice={data.min}
+        maxPrice={data.max}
+        priceArray={data.prices}
         fixedType={true}
-      />
+      /> : <Loading/> } */}
       <button className="exercises--btn">
         <Link to={"/"}>Menu</Link>
       </button>

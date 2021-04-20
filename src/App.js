@@ -12,11 +12,11 @@ const App = () => {
           <Link to={"/exercise1"}>Normal Range</Link>
         </button>
       </div>
-      <div>
+      {/* <div>
         <button className="btn">
-          <Link to={"/exercise2"}>Fixed values range</Link>
+          <Link to={"/exercise2"}>Fixed values range 🛠️</Link>
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
