@@ -42,6 +42,12 @@ describe("Range", () => {
 });
 
 describe("Range Functionality", () => {
+  let component = render(
+    <BrowserRouter>
+      <Range {...props} />
+    </BrowserRouter>
+  );
+
   it("should change left selector value", () => {
     const { inputLeft } = setup();
     fireEvent.change(inputLeft, { target: { value: "23" } });
@@ -51,32 +57,15 @@ describe("Range Functionality", () => {
   it("should change right selector value", () => {
     const { inputRight } = setup();
     fireEvent.change(inputRight, { target: { value: "23" } });
-   // screen.debug();
     expect(inputRight.value).toBe("23");
   });
 
-  /*
-  
-  Cuando cambio los valores de inputRight e inputLeft, pasa medio segundo hasta que se aplica, porque lo tengo montado con un debounce
-  entonces necesito esperar un momento antes de comprobar los valores de nuevo
-  
-  */
-  
-  // it("left selector can´t be bigger than right selector", async () => {
-  //   const { inputLeft, inputRight } = setup();
-  //   fireEvent.change(inputRight, { target: { value: "40" } });
-  //   fireEvent.change(inputLeft, { target: { value: "45" } });
-  //   await new Promise((r) => setTimeout(r, 2000));
-  //   expect(parseInt(inputLeft.value)).(parseInt(inputRight.value));
-  // });
-
-  // it("right selector can´t be smaller than left selector", async () => {
-  //   const { inputLeft, inputRight } = setup();
-  //   fireEvent.change(inputRight, { target: { value: "40" } });
-  //   fireEvent.change(inputLeft, { target: { value: "45" } });
-  //   await new Promise((r) => setTimeout(r, 2000));
-  //   expect(parseInt(inputRight.value)).toBeGreaterThan(
-  //     parseInt(inputLeft.value)
-  //   );
-  // });
+  it("selectors cannot be crossed", async () => {
+    const { inputLeft, inputRight } = setup();
+    fireEvent.change(inputRight, { target: { value: "40" } });
+    fireEvent.change(inputLeft, { target: { value: "45" } });
+    await expect(parseInt(inputRight.value)).toBeLessThan(
+      parseInt(inputLeft.value)
+    );
+  });
 });

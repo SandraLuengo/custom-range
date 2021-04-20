@@ -29,6 +29,7 @@ const SelectorRange = ({
       ></div>
       <input
         aria-label={`cost-input-${type}`}
+        role="input"
         onChange={(e) => changePosition(e, setState, state, type, maxValue, minValue)}
         onMouseDown={(e) => mouseDown(e, selector.current)}
         id={`input-${type}`}
