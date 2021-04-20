@@ -17,7 +17,7 @@ const Exercise1 = () => {
         maxPrice={data.price.max}
         fixedType={false}
       /> : <Loading/>} 
-      <button className="exercises--btn">
+      <button   aria-label='button-menu' className="exercises--btn">
         <Link to={"/"}>Menu</Link>
       </button>
     </div>
